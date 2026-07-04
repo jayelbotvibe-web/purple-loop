@@ -1,0 +1,42 @@
+{
+  "CVE-2021-44228": {
+    "description": "Apache Log4j RCE (Log4Shell)",
+    "techniques": ["T1059", "T1190", "T1210"],
+    "atomics": {
+      "T1059": ["T1059.004-1"],
+      "T1190": ["T1190-1"],
+      "T1210": ["T1210-1"]
+    }
+  },
+  "CVE-2021-34527": {
+    "description": "Windows Print Spooler RCE (PrintNightmare)",
+    "techniques": ["T1547", "T1068"],
+    "atomics": {
+      "T1547": ["T1547.001-1"],
+      "T1068": ["T1068-1"]
+    }
+  },
+  "CVE-2021-26855": {
+    "description": "Exchange Server SSRF (ProxyLogon)",
+    "techniques": ["T1190", "T1505"],
+    "atomics": {
+      "T1190": ["T1190-1"],
+      "T1505": ["T1505.003-1"]
+    }
+  },
+  "CVE-2023-23397": {
+    "description": "Outlook Privilege Escalation",
+    "techniques": ["T1566"],
+    "atomics": {
+      "T1566": ["T1566.001-1"]
+    }
+  },
+  "CVE-2019-19781": {
+    "description": "Citrix ADC RCE",
+    "techniques": ["T1190", "T1133"],
+    "atomics": {
+      "T1190": ["T1190-1"],
+      "T1133": ["T1133-1"]
+    }
+  }
+}
