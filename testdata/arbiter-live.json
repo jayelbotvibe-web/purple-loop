@@ -1,0 +1,171 @@
+{
+  "alerts": [
+    {
+      "id": "79f4cd040d371738",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2024-21182 \u2014 Oracle WebLogic Server Unspecified Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Databas",
+      "matched_apps": [
+        "Windows Server",
+        "Oracle Database",
+        "Apache HTTP Server"
+      ],
+      "cves": [
+        "CVE-2024-21182"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "6c3fc6acc00f0bcc",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-0257 \u2014 Palo Alto Networks PAN-OS Authentication Bypass Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Pa",
+      "matched_apps": [
+        "Palo Alto Networks PAN-OS"
+      ],
+      "cves": [
+        "CVE-2026-0257"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "d316af34b7848e92",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-20182 \u2014 Cisco Catalyst SD-WAN Controller Authentication Bypass Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/",
+      "matched_apps": [
+        "KLA-Tencor Catalyst",
+        "ASML Lithography Controller",
+        "Cisco IOS XE"
+      ],
+      "cves": [
+        "CVE-2026-20182"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "d651065e7aebc6f2",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-0300 \u2014 Palo Alto Networks PAN-OS Out-of-bounds Write Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Palo",
+      "matched_apps": [
+        "Palo Alto Networks PAN-OS"
+      ],
+      "cves": [
+        "CVE-2026-0300"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "7388a6ef25765003",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-33825 \u2014 Microsoft Defender Insufficient Granularity of Access Control Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImp",
+      "matched_apps": [
+        "Windows Server",
+        "CyberArk Privileged Access",
+        "Microsoft 365"
+      ],
+      "cves": [
+        "CVE-2026-33825"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "8feeb3dd5961f733",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-20122 \u2014 Cisco Catalyst SD-WAN Manager Incorrect Use of Privileged APIs Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nIm",
+      "matched_apps": [
+        "KLA-Tencor Catalyst",
+        "Cisco IOS XE",
+        "CyberArk Privileged Access"
+      ],
+      "cves": [
+        "CVE-2026-20122"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "a4dfdb1cc62c0499",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-20127 \u2014 Cisco Catalyst SD-WAN Controller and Manager Authentication Bypass Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)",
+      "matched_apps": [
+        "KLA-Tencor Catalyst",
+        "ASML Lithography Controller",
+        "Cisco IOS XE"
+      ],
+      "cves": [
+        "CVE-2026-20127"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "86fc08612ffbd72b",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-39935 \u2014 GitLab Community and Enterprise Editions Server-Side Request Forgery (SSRF) Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publica",
+      "matched_apps": [
+        "Red Hat Enterprise Linux",
+        "Windows Server",
+        "Camstar Enterprise",
+        "Apache HTTP Server",
+        "GitLab Enterprise",
+        "Splunk Enterprise"
+      ],
+      "cves": [
+        "CVE-2021-39935"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "fe81d3df653f65d7",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2024-37079 \u2014 Broadcom VMware vCenter Server Out-of-bounds Write Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  ",
+      "matched_apps": [
+        "Windows Server",
+        "VMware vSphere",
+        "Apache HTTP Server"
+      ],
+      "cves": [
+        "CVE-2024-37079"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "fc500b9dce2abd93",
+      "action": "Attend",
+      "severity": "high",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2025-66644 \u2014 Array Networks ArrayOS AG OS Command Injection Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Pa",
+      "matched_apps": [
+        "Palo Alto Networks PAN-OS"
+      ],
+      "cves": [
+        "CVE-2025-66644"
+      ],
+      "techniques": [
+        "T1059"
+      ]
+    }
+  ]
+}

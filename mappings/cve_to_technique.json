@@ -1,42 +1,187 @@
 {
   "CVE-2021-44228": {
     "description": "Apache Log4j RCE (Log4Shell)",
-    "techniques": ["T1059", "T1190", "T1210"],
+    "techniques": [
+      "T1059",
+      "T1190",
+      "T1210"
+    ],
     "atomics": {
-      "T1059": ["T1059.004-1"],
-      "T1190": ["T1190-1"],
-      "T1210": ["T1210-1"]
+      "T1059": [
+        "T1059.004-1"
+      ],
+      "T1190": [
+        "T1190-1"
+      ],
+      "T1210": [
+        "T1210-1"
+      ]
     }
   },
   "CVE-2021-34527": {
     "description": "Windows Print Spooler RCE (PrintNightmare)",
-    "techniques": ["T1547", "T1068"],
+    "techniques": [
+      "T1547",
+      "T1068"
+    ],
     "atomics": {
-      "T1547": ["T1547.001-1"],
-      "T1068": ["T1068-1"]
+      "T1547": [
+        "T1547.001-1"
+      ],
+      "T1068": [
+        "T1068-1"
+      ]
     }
   },
   "CVE-2021-26855": {
     "description": "Exchange Server SSRF (ProxyLogon)",
-    "techniques": ["T1190", "T1505"],
+    "techniques": [
+      "T1190",
+      "T1505"
+    ],
     "atomics": {
-      "T1190": ["T1190-1"],
-      "T1505": ["T1505.003-1"]
+      "T1190": [
+        "T1190-1"
+      ],
+      "T1505": [
+        "T1505.003-1"
+      ]
     }
   },
   "CVE-2023-23397": {
     "description": "Outlook Privilege Escalation",
-    "techniques": ["T1566"],
+    "techniques": [
+      "T1566"
+    ],
     "atomics": {
-      "T1566": ["T1566.001-1"]
+      "T1566": [
+        "T1566.001-1"
+      ]
     }
   },
   "CVE-2019-19781": {
     "description": "Citrix ADC RCE",
-    "techniques": ["T1190", "T1133"],
+    "techniques": [
+      "T1190",
+      "T1133"
+    ],
     "atomics": {
-      "T1190": ["T1190-1"],
-      "T1133": ["T1133-1"]
+      "T1190": [
+        "T1190-1"
+      ],
+      "T1133": [
+        "T1133-1"
+      ]
+    }
+  },
+  "CVE-2024-21182": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2024-21182 \u2014 Oracle WebLogic Server Unspecified Vul",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2026-0257": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2026-0257 \u2014 Palo Alto Networks PAN-OS Authenticatio",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2026-20182": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2026-20182 \u2014 Cisco Catalyst SD-WAN Controller Authe",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2026-0300": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2026-0300 \u2014 Palo Alto Networks PAN-OS Out-of-bounds",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2026-33825": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2026-33825 \u2014 Microsoft Defender Insufficient Granul",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2026-20122": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2026-20122 \u2014 Cisco Catalyst SD-WAN Manager Incorrec",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2026-20127": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2026-20127 \u2014 Cisco Catalyst SD-WAN Controller and M",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2021-39935": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2021-39935 \u2014 GitLab Community and Enterprise Editio",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2024-37079": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2024-37079 \u2014 Broadcom VMware vCenter Server Out-of-",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2025-66644": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2025-66644 \u2014 Array Networks ArrayOS AG OS Command I",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
     }
   }
 }
