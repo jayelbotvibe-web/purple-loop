@@ -6,7 +6,7 @@ export
 TECHNIQUE ?= T1059.004
 LAB_DIR := lab/wazuh-docker/single-node
 
-.PHONY: help host-prep lab-fetch lab-up lab-down verify run build vet reset
+.PHONY: help host-prep lab-fetch lab-up lab-down verify run build vet reset snapshot restore
 
 help: ## list targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -44,3 +44,9 @@ run: build ## validate one technique end-to-end (TECHNIQUE=...)
 reset: ## FULL teardown incl. volumes — clean slate for a retry
 	@cd $(LAB_DIR) && docker compose down -v || true
 	@echo "lab volumes removed. run lab-up to rebuild from clean."
+
+snapshot: ## snapshot lab state + Windows VM (save docker images)
+	@bash scripts/snapshot.sh
+
+restore: ## restore lab from snapshot (RESTORE_TAG=...)
+	@bash scripts/restore.sh $(RESTORE_TAG)
