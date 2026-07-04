@@ -18,6 +18,12 @@ func (Normalizer) Normalize(raw json.RawMessage) map[string]string {
 	}
 	out := make(map[string]string)
 
+	// Top-level canonical fields (dry-run, fixtures)
+	getString(event, "Image", &out, "Image")
+	getString(event, "ParentImage", &out, "ParentImage")
+	getString(event, "CommandLine", &out, "CommandLine")
+	getString(event, "User", &out, "User")
+
 	// Try Windows Sysmon / EventChannel paths
 	if data, ok := event["data"].(map[string]any); ok {
 		if win, ok := data["win"].(map[string]any); ok {
