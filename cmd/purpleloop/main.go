@@ -18,6 +18,22 @@ import (
 	"github.com/jayelbotvibe-web/purple-loop/internal/report"
 )
 
+// techniqueRuleMap maps technique IDs to their Sigma rule files.
+// ponytail: embedded map, avoids JSON loading overhead.
+var techniqueRuleMap = map[string]string{
+	"T1059.004":  "detections/linux/proc_creation_susp_shell.yml",
+	"T1087.001":  "detections/linux/T1087.001.yml",
+	"T1082":      "detections/linux/T1082.yml",
+	"T1033":      "detections/linux/T1033.yml",
+	"T1007":      "detections/linux/T1007.yml",
+	"T1016":      "detections/linux/T1016.yml",
+	"T1049":      "detections/linux/T1049.yml",
+	"T1069.001":  "detections/linux/T1069.001.yml",
+	"T1069":      "detections/linux/T1069.001.yml",
+	"T1135":      "detections/linux/T1135.yml",
+	"T1518":      "detections/linux/T1518.yml",
+}
+
 func main() {
 	if len(os.Args) < 2 || os.Args[1] != "run" {
 		fmt.Fprintln(os.Stderr, "usage: purpleloop run [--technique <ID> | --plan <file>] [flags]")
@@ -223,11 +239,10 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		return model.ProofChain{}, fmt.Errorf("collect: %w", err)
 	}
 
-	// Resolve rule path from technique mapping
-	rulePath := fmt.Sprintf("detections/linux/%s.yml", task.TechniqueID)
-	// Fallback: try the sample rule for known techniques
-	if _, err := os.Stat(rulePath); os.IsNotExist(err) {
-		rulePath = "detections/linux/proc_creation_susp_shell.yml"
+	// Resolve rule path from technique mapping (ponytail: embedded, no JSON load)
+	rulePath := "" // empty → evaluator returns MISSED for unmapped techniques
+	if mapped, ok := techniqueRuleMap[task.TechniqueID]; ok {
+		rulePath = mapped
 	}
 	rule := model.SigmaRule{Path: rulePath, Title: task.TechniqueID}
 	verdict, evidence, err := eval.Evaluate(rule, events)
