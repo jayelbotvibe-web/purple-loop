@@ -8,6 +8,7 @@ import (
 	"html"
 	"io"
 	"os"
+	"time"
 
 	"github.com/jayelbotvibe-web/purple-loop/internal/model"
 )
@@ -84,4 +85,69 @@ tr:hover{background:#1a1a2e}
 
 	f.WriteString("</table></body></html>")
 	return nil
+}
+
+// NavigatorLayerReporter writes an ATT&CK Navigator layer JSON file.
+type NavigatorLayerReporter struct {
+	Path string
+}
+
+func (r NavigatorLayerReporter) Write(run model.CampaignResult) error {
+	type navTechnique struct {
+		TechniqueID string `json:"techniqueID"`
+		Score       int    `json:"score"`
+		Color       string `json:"color"`
+		Comment     string `json:"comment,omitempty"`
+	}
+	type navLayer struct {
+		Name        string         `json:"name"`
+		Description string         `json:"description"`
+		Domain      string         `json:"domain"`
+		Versions    map[string]string `json:"versions"`
+		Techniques  []navTechnique `json:"techniques"`
+		Gradient    struct {
+			Colors []string `json:"colors"`
+			MinVal int      `json:"minValue"`
+			MaxVal int      `json:"maxValue"`
+		} `json:"gradient"`
+	}
+
+	verdictColors := map[model.Verdict]struct {
+		color string
+		score int
+	}{
+		model.Detected: {"#4caf50", 100},
+		model.Partial:  {"#ff9800", 50},
+		model.Missed:   {"#f44336", 0},
+		model.Errored:  {"#e91e63", 0},
+	}
+
+	layer := navLayer{
+		Name:        "Purple Loop Coverage",
+		Description: fmt.Sprintf("Detection coverage from campaign run at %s", run.StartedAt.Format(time.RFC3339)),
+		Domain:      "mitre-enterprise",
+		Versions:    map[string]string{"layer": "4.5", "attack": "16"},
+	}
+	layer.Gradient.Colors = []string{"#f44336", "#ff9800", "#4caf50"}
+	layer.Gradient.MinVal = 0
+	layer.Gradient.MaxVal = 100
+
+	for _, c := range run.Chains {
+		vc := verdictColors[c.Verdict]
+		layer.Techniques = append(layer.Techniques, navTechnique{
+			TechniqueID: c.TechniqueID,
+			Score:       vc.score,
+			Color:       vc.color,
+			Comment:     fmt.Sprintf("%s: %d events, rule %s", c.Verdict, c.EventsCollected, c.RuleMatched),
+		})
+	}
+
+	f, err := os.Create(r.Path)
+	if err != nil {
+		return fmt.Errorf("create navigator layer: %w", err)
+	}
+	defer f.Close()
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	return enc.Encode(layer)
 }

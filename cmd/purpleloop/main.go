@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jayelbotvibe-web/purple-loop/internal/collector"
@@ -65,8 +66,11 @@ func newColl(dryRun bool, managerContainer string) model.Collector {
 }
 
 func newReporter(output string) model.Reporter {
-	if output != "" {
+	if strings.HasSuffix(output, ".html") {
 		return report.HTMLReporter{Path: output}
+	}
+	if strings.HasSuffix(output, ".json") {
+		return report.NavigatorLayerReporter{Path: output}
 	}
 	return report.JSONReporter{Out: os.Stdout}
 }
