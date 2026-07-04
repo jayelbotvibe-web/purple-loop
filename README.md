@@ -1,41 +1,121 @@
 # Purple Loop
 
+[![CI](https://github.com/jayelbotvibe-web/purple-loop/actions/workflows/ci.yml/badge.svg)](https://github.com/jayelbotvibe-web/purple-loop/actions/workflows/ci.yml)
+[![Go 1.22+](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)](https://go.dev)
+[![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 Risk-driven detection validation. A Go purple-team engine that proves whether you
-can detect the threats that matter — in priority order, with evidence. It closes
-the loop between **threat-intel-arbiter** (what matters) and **your detections**
-(can you catch it).
+can detect the threats that matter — in priority order, with evidence.
 
-> **Status:** Phase 0 complete — Wazuh stack + victim running, telemetry pipeline verified.
+> **Status:** v1.0 — full pipeline operational. Lab running, campaigns executing,
+> reports generating, arbiter integration live.
 
-## What works today
-- CLI skeleton runs the full core loop in dry mode and prints a proof chain:
-  ```bash
-  go run ./cmd/purpleloop run --technique T1059.004 --dry-run
-  ```
-- Pluggable interfaces (`internal/model`) for feed, executor, collector,
-  evaluator, reporter — each with a stub implementation.
-- Lab telemetry pipeline: Wazuh 4.9.2 single-node + Ubuntu 22.04 victim,
-  agent enrolled, events flowing. Query via API:
-  ```bash
-  # Get agent status
-  curl -k -u wazuh-wui:<pass> -X POST "https://<manager>:55000/security/user/authenticate?raw=true"
-  curl -k -H "Authorization: Bearer <token>" "https://<manager>:55000/agents?agents_list=001"
-  ```
+## What it does
 
-## Quickstart (once the lab lands — Phase 0)
-```bash
-cp .env.example .env         # fill in lab secrets (gitignored)
-make host-prep               # one-time host tweak (vm.max_map_count)
-make lab-fetch               # pull pinned Wazuh single-node + Atomic Red Team
-make lab-up                  # bring the stack + victim up
-make verify                  # binary health check — must pass before proceeding
-make run TECHNIQUE=T1059.004 # validate one technique end-to-end
+```
+Priority feed → Select → Execute → Collect → Evaluate → Prove → Report
 ```
 
-## Layout
-See `DESIGN.md` (Repository layout). Planning docs — `DESIGN.md`,
-`AGENT_PLAYBOOK.md` — are the source of truth; the agent reads them before acting.
+1. **Priority feed** — CVEs + ATT&CK techniques from threat-intel-arbiter, sorted by SSVC action
+2. **Execute** — run Atomic Red Team tests on lab victims (Linux via Docker, Windows via VMware)
+3. **Collect** — query Wazuh SIEM for telemetry in the execution window
+4. **Evaluate** — match Sigma detection rules against collected events
+5. **Prove** — produce a verdict (DETECTED/PARTIAL/MISSED) with the raw evidence chain
+6. **Report** — JSON, HTML coverage grid, ATT&CK Navigator layer
+
+## Quickstart
+
+```bash
+cp .env.example .env
+make host-prep               # vm.max_map_count + tooling check
+make lab-fetch               # pull Wazuh 4.9.2 + Atomic Red Team
+make lab-up                  # start manager, indexer, dashboard, victim
+make verify                  # health check
+
+# Single technique
+go run ./cmd/purpleloop run --technique T1059.004 \
+  --victim-container purpleloop-victim \
+  --manager-container single-node-wazuh.manager-1
+
+# 10-technique campaign
+go run ./cmd/purpleloop run --plan plans/discovery.yml --output report.html
+
+# Priority-ordered from arbiter
+go run ./cmd/purpleloop run --arbiter testdata/arbiter-export.json --output report.html
+
+# Multi-stage actor emulation
+go run ./cmd/purpleloop run --emulation emulation/apt29-subset.yml --output report.html
+
+# Dry-run (no lab needed)
+go run ./cmd/purpleloop run --plan plans/discovery.yml --dry-run
+```
+
+## Sample output
+
+```
+$ go run ./cmd/purpleloop run --plan plans/discovery.yml --dry-run
+{
+  "started_at": "2026-07-04T11:06:26Z",
+  "chains": [
+    {
+      "technique_id": "T1059.004",
+      "atomic": {"id": "T1059.004-1", "command": "id; whoami", "executor": "sh"},
+      "executed_at": "2026-07-04T11:06:26Z",
+      "events_collected": 1,
+      "rule_matched": "detections/linux/proc_creation_susp_shell.yml",
+      "verdict": "DETECTED",
+      "evidence": [{"event_id": "dry-0001", ...}]
+    }
+  ]
+}
+```
+
+HTML report shows priority column, CVE, verdict breakdown, and narrative headline:
+*"Top 10 exploited-in-the-wild: 10 detected / 0 partial / 0 missed"*
 
 ## The two-repo pipeline
-`threat-intel-arbiter` decides **what** to test (exploited-in-the-wild CVEs →
-ATT&CK techniques). Purple Loop proves **whether it's caught**, in priority order.
+
+| Repo | Role |
+|------|------|
+| [threat-intel-arbiter](https://github.com/jayelbotvibe-web/threat-intel-arbiter) | Decides **what** to test (exploited CVEs → ATT&CK) |
+| **purple-loop** (this repo) | Proves **whether it's caught**, in priority order |
+
+## Layout
+
+```
+purple-loop/
+├── cmd/purpleloop/          CLI entrypoint (stdlib flag)
+├── internal/
+│   ├── feed/                StaticFeed, ArbiterFeed, EmulationPlan
+│   ├── executor/            DockerExecutor, DryExecutor
+│   ├── collector/           WazuhCollector (alerts.json)
+│   ├── evaluator/           PresenceEvaluator
+│   ├── report/              JSON, HTML, Navigator layer
+│   ├── model/               Types + interfaces
+│   └── mapping/             CVE → technique → atomic resolver
+├── detections/              10 Sigma rules + fixtures
+├── emulation/               Multi-stage actor plans
+├── plans/                   Campaign plan YAML
+├── scripts/                 lint-sigma, regression-test, verify-lab
+├── lab/                     Docker Compose override + victim
+└── testdata/                Arbiter export fixtures
+```
+
+## Detection-as-code
+
+Every Sigma rule has positive/negative fixtures. CI validates:
+
+- Rule schema (required fields present)
+- Fixture files exist and are valid JSONL
+- `go build ./cmd/... ./internal/...` + `go test ./internal/...` + `go vet`
+
+## Phases
+
+| Version | Phase | Status |
+|---------|-------|--------|
+| v0.1.0 | Lab foundation | ✓ |
+| v0.2.0 | MVP loop | ✓ |
+| v0.3.0 | Engine & reports | ✓ |
+| v0.4.0 | CI & Windows | ✓ (#17-18 blocked pending VM) |
+| v0.5.0 | Arbiter integration | ✓ |
+| v1.0.0 | Emulation & release | ✓ |
