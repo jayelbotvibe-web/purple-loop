@@ -1,0 +1,30 @@
+# Multi-stage actor emulation plan. Each stage groups techniques into a
+# tactical phase; stages run sequentially, producing per-stage verdicts.
+name: discovery-chain
+description: Simple 3-stage discovery emulation — initial recon, system info gathering, network discovery
+stages:
+  - name: recon
+    description: Initial reconnaissance — who is on the system
+    techniques:
+      - technique_id: T1033
+        atomic_ids: [T1033-1]
+      - technique_id: T1087.001
+        atomic_ids: [T1087.001-1]
+  - name: system-info
+    description: Gather system information
+    techniques:
+      - technique_id: T1082
+        atomic_ids: [T1082-1]
+      - technique_id: T1518
+        atomic_ids: [T1518-1]
+      - technique_id: T1007
+        atomic_ids: [T1007-1]
+  - name: network
+    description: Discover network configuration and connections
+    techniques:
+      - technique_id: T1016
+        atomic_ids: [T1016-1]
+      - technique_id: T1049
+        atomic_ids: [T1049-1]
+      - technique_id: T1135
+        atomic_ids: [T1135-1]
