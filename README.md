@@ -5,8 +5,7 @@ can detect the threats that matter — in priority order, with evidence. It clos
 the loop between **threat-intel-arbiter** (what matters) and **your detections**
 (can you catch it).
 
-> **Status:** scaffolding. See `AGENT_PLAYBOOK.md` for the phased build plan and
-> `DESIGN.md` for the architecture.
+> **Status:** Phase 0 complete — Wazuh stack + victim running, telemetry pipeline verified.
 
 ## What works today
 - CLI skeleton runs the full core loop in dry mode and prints a proof chain:
@@ -15,6 +14,13 @@ the loop between **threat-intel-arbiter** (what matters) and **your detections**
   ```
 - Pluggable interfaces (`internal/model`) for feed, executor, collector,
   evaluator, reporter — each with a stub implementation.
+- Lab telemetry pipeline: Wazuh 4.9.2 single-node + Ubuntu 22.04 victim,
+  agent enrolled, events flowing. Query via API:
+  ```bash
+  # Get agent status
+  curl -k -u wazuh-wui:<pass> -X POST "https://<manager>:55000/security/user/authenticate?raw=true"
+  curl -k -H "Authorization: Bearer <token>" "https://<manager>:55000/agents?agents_list=001"
+  ```
 
 ## Quickstart (once the lab lands — Phase 0)
 ```bash
