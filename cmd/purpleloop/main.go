@@ -1,6 +1,5 @@
-// Command purpleloop is the CLI entrypoint. Skeleton note: uses stdlib flag so
-// it compiles with zero external deps; Phase 1 migrates to cobra and swaps the
-// dry executor/collector for the real lab implementations.
+// Command purpleloop is the CLI entrypoint. Uses stdlib flag to keep
+// dependencies at zero; ponytail: cobra adds nothing flag doesn't give us.
 package main
 
 import (
@@ -19,38 +18,50 @@ import (
 
 func main() {
 	if len(os.Args) < 2 || os.Args[1] != "run" {
-		fmt.Fprintln(os.Stderr, "usage: purpleloop run --technique <ID> [--dry-run]")
+		fmt.Fprintln(os.Stderr, "usage: purpleloop run --technique <ID> [flags]")
 		os.Exit(2)
 	}
 	fs := flag.NewFlagSet("run", flag.ExitOnError)
 	technique := fs.String("technique", "", "ATT&CK technique ID, e.g. T1059.004")
-	_ = fs.Bool("dry-run", false, "run the pipeline without a live lab")
-	wazuhURL := fs.String("wazuh-url", "", "Wazuh API base URL (empty => dry collector)")
+	dryRun := fs.Bool("dry-run", false, "run the pipeline without a live lab")
+	victim := fs.String("victim-container", "", "Docker container name for execution (e.g. purpleloop-victim)")
+	manager := fs.String("manager-container", "", "Docker container name for Wazuh manager")
 	_ = fs.Parse(os.Args[2:])
 
 	if *technique == "" {
 		fmt.Fprintln(os.Stderr, "error: --technique is required")
 		os.Exit(2)
 	}
-	if err := runOne(context.Background(), *technique, *wazuhURL); err != nil {
+	if err := runOne(context.Background(), *technique, *dryRun, *victim, *manager); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-// runOne drives the core loop for a single technique:
-// select -> execute -> collect -> evaluate -> proof chain -> report.
-func runOne(ctx context.Context, technique, wazuhURL string) error {
-	var exec model.Executor = executor.DryExecutor{}
-	var coll model.Collector = &collector.WazuhCollector{BaseURL: wazuhURL}
-	var eval model.Evaluator = evaluator.PresenceEvaluator{}
-	var rep model.Reporter = report.JSONReporter{Out: os.Stdout}
+func runOne(ctx context.Context, technique string, dryRun bool, victimContainer, managerContainer string) error {
+	var exec model.Executor
+	var coll model.Collector
+
+	if dryRun || victimContainer == "" {
+		exec = executor.DryExecutor{}
+	} else {
+		exec = executor.DockerExecutor{Container: victimContainer}
+	}
+
+	if dryRun || managerContainer == "" {
+		coll = &collector.WazuhCollector{} // dry mode
+	} else {
+		coll = &collector.WazuhCollector{ManagerContainer: managerContainer}
+	}
+
+	eval := evaluator.PresenceEvaluator{}
+	rep := report.JSONReporter{Out: os.Stdout}
 
 	atomic := model.AtomicTest{
 		ID:          technique + "-1",
 		TechniqueID: technique,
-		Command:     "sh -c 'id; whoami'",
-		Executor:    "bash",
+		Command:     "id; whoami",
+		Executor:    "sh",
 	}
 	target := model.Target{Host: "victim01", Kind: "linux"}
 
@@ -58,9 +69,13 @@ func runOne(ctx context.Context, technique, wazuhURL string) error {
 	if err != nil {
 		return fmt.Errorf("execute: %w", err)
 	}
-	defer exec.Cleanup(ctx, atomic, target)
+	defer func() {
+		if err := exec.Cleanup(ctx, atomic, target); err != nil {
+			fmt.Fprintf(os.Stderr, "cleanup warning: %v\n", err)
+		}
+	}()
 
-	events, err := coll.Query(ctx, run.Window(3*time.Second), target.Host)
+	events, err := coll.Query(ctx, run.Window(5*time.Second), target.Host)
 	if err != nil {
 		return fmt.Errorf("collect: %w", err)
 	}
