@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Purple Loop — Architecture</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:900px;margin:2em auto;padding:0 1em;background:#0d1117;color:#c9d1d9}
+  h1,h2{color:#58a6ff}
+  a{color:#79c0ff}
+  .loop{display:flex;gap:1em;flex-wrap:wrap;justify-content:center;margin:2em 0}
+  .box{border:1px solid #30363d;border-radius:8px;padding:1.5em;text-align:center;min-width:120px;background:#161b22}
+  .box strong{display:block;font-size:1.1em;color:#58a6ff;margin-bottom:.5em}
+  .arrow{font-size:1.5em;color:#8b949e;align-self:center}
+  table{width:100%;border-collapse:collapse;margin:1em 0}
+  th,td{padding:.5em;border:1px solid #30363d;text-align:left}
+  th{background:#161b22}
+  .gap{color:#f85149}.hit{color:#3fb950}
+  pre{background:#161b22;padding:1em;border-radius:6px;overflow-x:auto}
+</style>
+</head>
+<body>
+<h1>Purple Loop</h1>
+<p>Risk-driven detection validation. Emulates the ATT&CK techniques that matter most and proves whether your Sigma detections catch them — with evidence.</p>
+
+<h2>Core Loop</h2>
+<div class="loop">
+  <div class="box"><strong>Feed</strong>threat-intel-arbiter<br>CVE → technique → atomic</div>
+  <span class="arrow">→</span>
+  <div class="box"><strong>Execute</strong>Docker / SSH<br>Linux + Windows</div>
+  <span class="arrow">→</span>
+  <div class="box"><strong>Collect</strong>Wazuh archives<br>raw telemetry</div>
+  <span class="arrow">→</span>
+  <div class="box"><strong>Evaluate</strong>Sigma rules<br>native Go parser</div>
+  <span class="arrow">→</span>
+  <div class="box"><strong>Report</strong>JSON / HTML<br>ATT&CK Navigator</div>
+</div>
+
+<h2>Architecture</h2>
+<p>The engine is built on five pluggable Go interfaces:</p>
+<table>
+<tr><th>Interface</th><th>Role</th><th>Implementations</th></tr>
+<tr><td>Feed</td><td>Loads prioritized techniques</td><td>StaticFeed, ArbiterFeed, EmulationFeed</td></tr>
+<tr><td>Executor</td><td>Runs atomics on targets</td><td>DockerExecutor, SSHExecutor, DryExecutor</td></tr>
+<tr><td>Collector</td><td>Queries Wazuh for telemetry</td><td>WazuhCollector (archives.json)</td></tr>
+<tr><td>Evaluator</td><td>Matches Sigma rules against events</td><td>RuleMatcherEvaluator</td></tr>
+<tr><td>Reporter</td><td>Produces coverage output</td><td>JSONReporter, HTMLReporter, NavigatorLayerReporter</td></tr>
+</table>
+
+<h2>Verdict Semantics</h2>
+<table>
+<tr><th>Verdict</th><th>Meaning</th></tr>
+<tr><td class="hit">DETECTED</td><td>Sigma rule condition matched an event</td></tr>
+<tr><td>PARTIAL</td><td>Primary selection matched, secondary didn't</td></tr>
+<tr><td class="gap">MISSED</td><td>Events collected, no rule matched — real gap</td></tr>
+<tr><td>NO_TELEMETRY</td><td>Zero events in window — collection problem</td></tr>
+<tr><td>INCONCLUSIVE</td><td>Pipeline canary failed — run not trusted</td></tr>
+</table>
+
+<h2>Lab</h2>
+<pre>
+Wazuh 4.9.2 (manager + indexer + dashboard)
+├── Agent 001: purpleloop-victim (Ubuntu, Docker)
+└── Agent 002: windows-vm (Windows 11, VMware bridged)
+</pre>
+
+<h2>Links</h2>
+<ul>
+<li><a href="https://github.com/jayelbotvibe-web/purple-loop">GitHub repo</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/DESIGN.md">DESIGN.md</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/threat-intel-arbiter">threat-intel-arbiter</a></li>
+</ul>
+</body>
+</html>
