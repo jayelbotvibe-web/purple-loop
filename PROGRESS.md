@@ -24,3 +24,6 @@ One line per closed issue: date · issue · what shipped · verification · comm
 - 2026-07-04 · #19 · ArbiterFeed: SSVC action→priority, 10 tasks sorted, arbiter JSON fixture · fe482df
 - 2026-07-04 · #20 · CVE→technique→atomic mapping resolver, 5 CVEs with technique+atomic lookup · 2cc4454
 - 2026-07-04 · #21 · --arbiter flag, priority column + narrative headline in HTML report · 4d4c5c0
+- 2026-07-04 · #22 · Multi-stage emulation format + --emulation runner, 3-stage discovery chain · adccf9a
+- 2026-07-04 · #23 · APT29-inspired 4-stage actor plan, 12 techniques end-to-end · 55fc36f
+- 2026-07-04 · #24 · v1.0 polish: README, CHANGELOG, badges, sample output, phase table · f8e2707
