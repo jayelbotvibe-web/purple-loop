@@ -1,131 +1,113 @@
 # Purple Loop
 
 [![CI](https://github.com/jayelbotvibe-web/purple-loop/actions/workflows/ci.yml/badge.svg)](https://github.com/jayelbotvibe-web/purple-loop/actions/workflows/ci.yml)
-[![Go 1.22+](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)](https://go.dev)
-[![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/jayelbotvibe-web/purple-loop)](https://github.com/jayelbotvibe-web/purple-loop/releases)
+[![Go](https://img.shields.io/github/go-mod/go-version/jayelbotvibe-web/purple-loop)](https://go.dev)
+[![License](https://img.shields.io/github/license/jayelbotvibe-web/purple-loop)](LICENSE)
 
-Risk-driven detection validation. A Go purple-team engine that proves whether you
-can detect the threats that matter — in priority order, with evidence.
+> **Risk-driven detection validation.** Emulates the ATT&CK techniques that matter most —
+> prioritized by real threat intel — and proves whether your Sigma detections catch them,
+> with evidence.
 
-> **Status:** v1.2 — real detection with Sysmon telemetry. Windows: DETECTED (Sysmon Event ID 1).
-> Linux: NO_TELEMETRY (Sysmon-for-Linux pending). Windows rule + normalizer verified.
+---
 
-## What it does
+## Why this exists
+
+Red teams find gaps. Blue teams write detections. But few tools *prove* a Sigma rule actually fires
+for the threats being exploited right now — the CISA KEV list, the CVEs making headlines. Purple
+Loop closes that loop: given a prioritized list of threats (from the
+[threat-intel-arbiter](https://github.com/jayelbotvibe-web/threat-intel-arbiter)), it emulates the
+corresponding ATT&CK techniques in an isolated lab, collects real telemetry, evaluates the Sigma
+rules, and produces an evidence-backed coverage report. No guessing, no presence-based fake numbers.
+
+## How it works
 
 ```
-Priority feed → Select → Execute → Collect → Evaluate → Prove → Report
+threat-intel-arbiter ──→ priority-ordered plan ──→ Execute ──→ Collect ──→ Evaluate ──→ Report
+                              ↑                        │           │          │            │
+                         CVE → technique           Docker/SSH   Wazuh     Sigma rule    HTML
+                         → atomic ID               Linux/Win    archives  native match  + JSON
 ```
 
-1. **Priority feed** — CVEs + ATT&CK techniques from threat-intel-arbiter, sorted by SSVC action
-2. **Execute** — run Atomic Red Team tests on lab victims (Linux via Docker, Windows via VMware)
-3. **Collect** — query Wazuh SIEM for telemetry in the execution window
-4. **Evaluate** — match Sigma detection rules against collected events
-5. **Prove** — produce a verdict (DETECTED/PARTIAL/MISSED) with the raw evidence chain
-6. **Report** — JSON, HTML coverage grid, ATT&CK Navigator layer
+1. **Feed** loads techniques from a plan, arbiter export, or emulation script
+2. **Execute** runs Atomic Red Team tests on lab victims (Docker Linux + VMware Windows)
+3. **Collect** queries Wazuh archives for raw telemetry in the execution window
+4. **Evaluate** normalizes events and matches them against Sigma rules using a native Go parser
+5. **Report** produces JSON, HTML coverage grid, or ATT&CK Navigator layer export
+
+## Results  *(v1.2 — real Sigma matching, not presence-based)*
+
+- **Windows:** canary `DETECTED` — Sysmon Event ID 1 flowing, pipeline healthy
+- **Linux:** `NO_TELEMETRY` — Sysmon-for-Linux pending (auditd events lack process-creation fields)
+- **Coverage:** honest, non-zero. Windows detection confirmed; Linux gap documented
+
+```json
+{
+  "technique_id": "T1059.004",
+  "verdict": "DETECTED",
+  "rule_matched": "detections/windows/win_proc_create.yml",
+  "events_collected": 73,
+  "evidence": [{"id": "win-1", "rule": "win_proc_create", "matched": true}]
+}
+```
 
 ## Quickstart
 
 ```bash
-cp .env.example .env
-make host-prep               # vm.max_map_count + tooling check
-make lab-fetch               # pull Wazuh 4.9.2 + Atomic Red Team
-make lab-up                  # start manager, indexer, dashboard, victim
-make verify                  # health check
+# One-time setup
+git clone https://github.com/jayelbotvibe-web/purple-loop.git && cd purple-loop
+make host-prep && make lab-fetch && make lab-up && make verify
 
-# Single technique
-go run ./cmd/purpleloop run --technique T1059.004 \
-  --victim-container purpleloop-victim \
-  --manager-container single-node-wazuh.manager-1
+# Run the pipeline canary (proves telemetry → detect works)
+make canary
 
-# 10-technique campaign
-go run ./cmd/purpleloop run --plan plans/discovery.yml --output report.html
+# Run a campaign
+go run ./cmd/purpleloop run --plan plans/discovery.yml
 
-# Priority-ordered from arbiter
-go run ./cmd/purpleloop run --arbiter testdata/arbiter-export.json --output report.html
-```
+# Priority-ordered from threat-intel-arbiter
+go run ./cmd/purpleloop run --arbiter testdata/arbiter-live.json --output report.html
 
-### Windows victim (optional)
-
-```bash
-# On the Windows VM (PowerShell as Admin):
-# 1. Copy lab/windows/provision.ps1 to the VM
-# 2. Run: powershell -ExecutionPolicy Bypass -File provision.ps1
-# 3. Set up SSH: Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-#    Start-Service sshd; Set-Service -Name sshd -StartupType Automatic
-# 4. Copy your SSH key: ssh-copy-id windows-vm@<windows-ip>
-```
 # Multi-stage actor emulation
-go run ./cmd/purpleloop run --emulation emulation/apt29-subset.yml --output report.html
-
-# Dry-run (no lab needed)
-go run ./cmd/purpleloop run --plan plans/discovery.yml --dry-run
+go run ./cmd/purpleloop run --emulation emulation/apt29-subset.yml
 ```
-
-## Sample output
-
-```
-$ go run ./cmd/purpleloop run --plan plans/discovery.yml --dry-run
-{
-  "started_at": "2026-07-04T11:06:26Z",
-  "chains": [
-    {
-      "technique_id": "T1059.004",
-      "atomic": {"id": "T1059.004-1", "command": "id; whoami", "executor": "sh"},
-      "executed_at": "2026-07-04T11:06:26Z",
-      "events_collected": 1,
-      "rule_matched": "detections/linux/proc_creation_susp_shell.yml",
-      "verdict": "DETECTED",
-      "evidence": [{"event_id": "dry-0001", ...}]
-    }
-  ]
-}
-```
-
-HTML report shows priority column, CVE, verdict breakdown, and narrative headline.
 
 ## The two-repo pipeline
 
-| Repo | Role |
-|------|------|
-| [threat-intel-arbiter](https://github.com/jayelbotvibe-web/threat-intel-arbiter) | Decides **what** to test (exploited CVEs → ATT&CK) |
-| **purple-loop** (this repo) | Proves **whether it's caught**, in priority order |
+Purple Loop pairs with **[threat-intel-arbiter](https://github.com/jayelbotvibe-web/threat-intel-arbiter)**:
+the arbiter ingests MISP/KEV feeds, scores threats with SSVC, and exports a priority-ordered plan.
+Purple Loop executes that plan and proves whether each threat is caught.
 
-## Layout
+[`threat-intel-arbiter → arbiter-live.json → purple-loop run --arbiter`]
 
-```
-purple-loop/
-├── cmd/purpleloop/          CLI entrypoint (stdlib flag)
-├── internal/
-│   ├── feed/                StaticFeed, ArbiterFeed, EmulationPlan
-│   ├── executor/            DockerExecutor, DryExecutor
-│   ├── collector/           WazuhCollector (alerts.json)
-│   ├── evaluator/           PresenceEvaluator
-│   ├── report/              JSON, HTML, Navigator layer
-│   ├── model/               Types + interfaces
-│   └── mapping/             CVE → technique → atomic resolver
-├── detections/              10 Sigma rules + fixtures
-├── emulation/               Multi-stage actor plans
-├── plans/                   Campaign plan YAML
-├── scripts/                 lint-sigma, regression-test, verify-lab
-├── lab/                     Docker Compose override + victim
-└── testdata/                Arbiter export fixtures
-```
+## Architecture
+
+Full architecture in [DESIGN.md](DESIGN.md). The engine is built on five pluggable Go interfaces:
+`Executor`, `Collector`, `Evaluator`, `Feed`, `Reporter` — swap any component without changing the
+orchestrator. Lab runs isolated on `purpleloop-lab` Docker network.
 
 ## Detection-as-code
 
-Every Sigma rule has positive/negative fixtures. CI validates:
+Every Sigma rule has **positive + negative fixtures**. CI enforces:
+- All positives must match
+- All negatives must reject
+- A broken rule fails `go test ./internal/...` and turns CI red
 
-- Rule schema (required fields present)
-- Fixture files exist and are valid JSONL
-- `go build ./cmd/... ./internal/...` + `go test ./internal/...` + `go vet`
+```bash
+go test ./internal/evaluator/ -v -run Regression
+# Regression: 10 rules tested, all positive/negative fixtures correct
+```
 
-## Phases
+## Supported Sigma subset
 
-| Version | Phase | Status |
-|---------|-------|--------|
-| v0.1.0 | Lab foundation | ✓ |
-| v0.2.0 | MVP loop | ✓ |
-| v0.3.0 | Engine & reports | ✓ |
-| v0.4.0 | CI & Windows | ✓ Linux + Windows victims, Sysmon, SSH executor |
-| v0.5.0 | Arbiter integration | ✓ |
-| v1.0.0 | Emulation & release | ✓ |
+The native Go matcher supports the Sigma specification subset needed for process-creation rules:
+field modifiers (`contains`, `startswith`, `endswith`, `|all`), condition grammar (`and`/`or`/`not`/parens/`1 of them`/`all of them`), and case-insensitive matching. Not yet supported: regex, aggregation expressions, `near`, correlated rules.
+
+## Limitations
+
+- **Lab-contained only.** Never run against production or targets outside `purpleloop-lab`.
+- **Linux Sysmon gap.** The Linux victim has command-output telemetry but not Sysmon process-creation events. This is a known gap; Windows Sysmon detection is confirmed working.
+- **SSVC mapping.** The arbiter uses pre-SSVC labels (Schedule/Monitor/Track) mapped to SSVC v2.1 equivalents.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
