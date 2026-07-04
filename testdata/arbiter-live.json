@@ -1,168 +1,182 @@
 {
   "alerts": [
     {
-      "id": "79f4cd040d371738",
-      "action": "Schedule",
+      "id": "c082e856e8bab927",
       "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2024-21182 \u2014 Oracle WebLogic Server Unspecified Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-35464 \u2014 ForgeRock Access Management (AM) Core Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 CyberArk Privileged Access is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "matched_apps": [
+        "Windows Server",
+        "Apache HTTP Server",
+        "CyberArk Privileged Access"
+      ],
+      "cves": [
+        "CVE-2021-35464"
+      ],
+      "iocs": [],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "565e119514d29a26",
+      "severity": "high",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2015-4852 \u2014 Oracle WebLogic Server Deserialization of Untrusted Data Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
       "matched_apps": [
         "Windows Server",
         "Oracle Database",
         "Apache HTTP Server"
       ],
       "cves": [
-        "CVE-2024-21182"
+        "CVE-2015-4852"
       ],
+      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "6c3fc6acc00f0bcc",
-      "action": "Schedule",
+      "id": "9a79e59e990263c3",
       "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-0257 \u2014 Palo Alto Networks PAN-OS Authentication Bypass Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Palo Alto Networks PAN-OS is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Palo Alto Networks PAN-OS is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
-      "matched_apps": [
-        "Palo Alto Networks PAN-OS"
-      ],
-      "cves": [
-        "CVE-2026-0257"
-      ],
-      "techniques": [
-        "T1059"
-      ]
-    },
-    {
-      "id": "d316af34b7848e92",
       "action": "Schedule",
-      "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-20182 \u2014 Cisco Catalyst SD-WAN Controller Authentication Bypass Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 ASML Lithography Controller is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Cisco IOS XE is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
-      "matched_apps": [
-        "KLA-Tencor Catalyst",
-        "ASML Lithography Controller",
-        "Cisco IOS XE"
-      ],
-      "cves": [
-        "CVE-2026-20182"
-      ],
-      "techniques": [
-        "T1059"
-      ]
-    },
-    {
-      "id": "d651065e7aebc6f2",
-      "action": "Schedule",
-      "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-0300 \u2014 Palo Alto Networks PAN-OS Out-of-bounds Write Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Palo Alto Networks PAN-OS is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Palo Alto Networks PAN-OS is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
-      "matched_apps": [
-        "Palo Alto Networks PAN-OS"
-      ],
-      "cves": [
-        "CVE-2026-0300"
-      ],
-      "techniques": [
-        "T1059"
-      ]
-    },
-    {
-      "id": "7388a6ef25765003",
-      "action": "Schedule",
-      "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-33825 \u2014 Microsoft Defender Insufficient Granularity of Access Control Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 CyberArk Privileged Access is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Microsoft 365 is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-14750 \u2014 Oracle WebLogic Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
       "matched_apps": [
         "Windows Server",
-        "CyberArk Privileged Access",
-        "Microsoft 365"
+        "Oracle Database",
+        "Apache HTTP Server"
       ],
       "cves": [
-        "CVE-2026-33825"
+        "CVE-2020-14750"
       ],
+      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "8feeb3dd5961f733",
-      "action": "Schedule",
+      "id": "3c28d8de9a9c2bd3",
       "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-20122 \u2014 Cisco Catalyst SD-WAN Manager Incorrect Use of Privileged APIs Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 CyberArk Privileged Access is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Cisco IOS XE is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
-      "matched_apps": [
-        "KLA-Tencor Catalyst",
-        "Cisco IOS XE",
-        "CyberArk Privileged Access"
-      ],
-      "cves": [
-        "CVE-2026-20122"
-      ],
-      "techniques": [
-        "T1059"
-      ]
-    },
-    {
-      "id": "a4dfdb1cc62c0499",
       "action": "Schedule",
-      "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2026-20127 \u2014 Cisco Catalyst SD-WAN Controller and Manager Authentication Bypass Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 ASML Lithography Controller is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Cisco IOS XE is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-14882 \u2014 Oracle WebLogic Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
       "matched_apps": [
-        "KLA-Tencor Catalyst",
-        "ASML Lithography Controller",
-        "Cisco IOS XE"
-      ],
-      "cves": [
-        "CVE-2026-20127"
-      ],
-      "techniques": [
-        "T1059"
-      ]
-    },
-    {
-      "id": "86fc08612ffbd72b",
-      "action": "Schedule",
-      "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-39935 \u2014 GitLab Community and Enterprise Editions Server-Side Request Forgery (SSRF) Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Red Hat Enterprise Linux is critical infrastructure (+2)\n  \u2022 Camstar Enterprise is critical infrastructure (+2)\n  \u2022 Splunk Enterprise is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
-      "matched_apps": [
-        "Red Hat Enterprise Linux",
         "Windows Server",
-        "Camstar Enterprise",
-        "Apache HTTP Server",
-        "GitLab Enterprise",
-        "Splunk Enterprise"
+        "Oracle Database",
+        "Apache HTTP Server"
       ],
       "cves": [
-        "CVE-2021-39935"
+        "CVE-2020-14882"
       ],
+      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "fe81d3df653f65d7",
-      "action": "Schedule",
+      "id": "5d1ec4eae65b796e",
       "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2024-37079 \u2014 Broadcom VMware vCenter Server Out-of-bounds Write Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-14883 \u2014 Oracle WebLogic Server Unspecified Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "matched_apps": [
+        "Windows Server",
+        "Oracle Database",
+        "Apache HTTP Server"
+      ],
+      "cves": [
+        "CVE-2020-14883"
+      ],
+      "iocs": [],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "ca5b706b2307f744",
+      "severity": "high",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-22005 \u2014 VMware vCenter Server File Upload Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
       "matched_apps": [
         "Windows Server",
         "VMware vSphere",
         "Apache HTTP Server"
       ],
       "cves": [
-        "CVE-2024-37079"
+        "CVE-2021-22005"
       ],
+      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "fc500b9dce2abd93",
-      "action": "Schedule",
+      "id": "23b8f6a4e76b716b",
       "severity": "high",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2025-66644 \u2014 Array Networks ArrayOS AG OS Command Injection Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Palo Alto Networks PAN-OS is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Palo Alto Networks PAN-OS is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-3952 \u2014 VMware vCenter Server Information Disclosure Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
       "matched_apps": [
-        "Palo Alto Networks PAN-OS"
+        "Windows Server",
+        "VMware vSphere",
+        "Apache HTTP Server"
       ],
       "cves": [
-        "CVE-2025-66644"
+        "CVE-2020-3952"
       ],
+      "iocs": [],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "984d193c960a9ec2",
+      "severity": "high",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-21972 \u2014 VMware vCenter Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "matched_apps": [
+        "Windows Server",
+        "VMware vSphere",
+        "Apache HTTP Server"
+      ],
+      "cves": [
+        "CVE-2021-21972"
+      ],
+      "iocs": [],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "a7397c50393fc48a",
+      "severity": "high",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-21985 \u2014 VMware vCenter Server Improper Input Validation Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "matched_apps": [
+        "Windows Server",
+        "VMware vSphere",
+        "Apache HTTP Server"
+      ],
+      "cves": [
+        "CVE-2021-21985"
+      ],
+      "iocs": [],
+      "techniques": [
+        "T1059"
+      ]
+    },
+    {
+      "id": "98d84841b10c90ee",
+      "severity": "high",
+      "action": "Schedule",
+      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-22017 \u2014 VMware vCenter Server Improper Access Control\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n  \u2022 CyberArk Privileged Access is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "matched_apps": [
+        "Windows Server",
+        "VMware vSphere",
+        "Apache HTTP Server",
+        "CyberArk Privileged Access"
+      ],
+      "cves": [
+        "CVE-2021-22017"
+      ],
+      "iocs": [],
       "techniques": [
         "T1059"
       ]

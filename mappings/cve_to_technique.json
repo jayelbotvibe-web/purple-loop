@@ -183,5 +183,115 @@
         "T1059.004-1"
       ]
     }
+  },
+  "CVE-2021-35464": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2021-35464 \u2014 ForgeRock Access Management (AM) Core ",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2015-4852": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2015-4852 \u2014 Oracle WebLogic Server Deserialization ",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-14750": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2020-14750 \u2014 Oracle WebLogic Server Remote Code Exe",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-14882": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2020-14882 \u2014 Oracle WebLogic Server Remote Code Exe",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-14883": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2020-14883 \u2014 Oracle WebLogic Server Unspecified Vul",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2021-22005": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2021-22005 \u2014 VMware vCenter Server File Upload Vuln",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-3952": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2020-3952 \u2014 VMware vCenter Server Information Discl",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2021-21972": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2021-21972 \u2014 VMware vCenter Server Remote Code Exec",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2021-21985": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2021-21985 \u2014 VMware vCenter Server Improper Input V",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2021-22017": {
+    "description": "HIGH (confidence: HIGH)\n\nCVE-2021-22017 \u2014 VMware vCenter Server Improper Access ",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
   }
 }
