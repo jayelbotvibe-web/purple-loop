@@ -21,3 +21,6 @@ One line per closed issue: date · issue · what shipped · verification · comm
 - 2026-07-04 · #16 · Fixture regression test in CI, validates all JSONL fixtures · 4e7d759
 - 2026-07-04 · #17 · BLOCKED — Windows victim VM needs ISO/license (needs-human) · —
 - 2026-07-04 · #18 · BLOCKED — Windows Executor depends on #17 (needs-human) · —
+- 2026-07-04 · #19 · ArbiterFeed: SSVC action→priority, 10 tasks sorted, arbiter JSON fixture · fe482df
+- 2026-07-04 · #20 · CVE→technique→atomic mapping resolver, 5 CVEs with technique+atomic lookup · 2cc4454
+- 2026-07-04 · #21 · --arbiter flag, priority column + narrative headline in HTML report · 4d4c5c0
