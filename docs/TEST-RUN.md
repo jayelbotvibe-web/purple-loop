@@ -55,7 +55,7 @@ $ go test ./internal/evaluator/ -v -run Regression
 ## Pitfalls (v1.0 → v1.1)
 | # | Category | Pitfall |
 |---|----------|---------|
-| 1 | Presence | v1.0 "100%" was any-events=detected, not rule-based |
+| 1 | Presence | v1.0 verdicts were presence-based (any events=detected), not rule-matched |
 | 2 | Telemetry | No Sysmon Event ID 1 — rules need process-creation fields |
 | 3 | Dry-run | Must emit canonical fields (Image, ParentImage) for matcher |
 | 4 | CI scope | `go test ./...` fails on vendored lab dirs — use `./internal/...` |
