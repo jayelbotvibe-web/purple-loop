@@ -66,7 +66,9 @@ tr:hover{background:#1a1a2e}
 			f.WriteString(fmt.Sprintf(`<span class="%s">%s: %d</span>`, v, v, n))
 		}
 	}
-	f.WriteString(`</div><table><tr><th>Technique</th><th>Verdict</th><th>Events</th><th>Rule</th><th>Evidence</th></tr>`)
+	f.WriteString(`</div>
+<div class="narrative"><strong>` + narrativeHeadline(counts) + `</strong></div>
+<table><tr><th>Priority</th><th>CVE</th><th>Technique</th><th>Verdict</th><th>Events</th><th>Rule</th></tr>`)
 
 	for _, c := range run.Chains {
 		evCount := fmt.Sprintf("%d", c.EventsCollected)
@@ -74,17 +76,34 @@ tr:hover{background:#1a1a2e}
 		if rule == "" {
 			rule = "—"
 		}
-		evidence := "—"
-		if len(c.Evidence) > 0 {
-			evidence = fmt.Sprintf("%d event(s)", len(c.Evidence))
+		prio := fmt.Sprintf("%.2f", c.ArbiterPriority)
+		cve := c.SourceCVE
+		if cve == "" {
+			cve = "—"
 		}
-		f.WriteString(fmt.Sprintf(`<tr><td>%s</td><td class="%s">%s</td><td>%s</td><td>%s</td><td>%s</td></tr>`,
-			html.EscapeString(c.TechniqueID), c.Verdict, c.Verdict,
-			evCount, html.EscapeString(rule), evidence))
+		f.WriteString(fmt.Sprintf(`<tr><td>%s</td><td>%s</td><td>%s</td><td class="%s">%s</td><td>%s</td><td>%s</td></tr>`,
+			prio, html.EscapeString(cve), html.EscapeString(c.TechniqueID),
+			c.Verdict, c.Verdict, evCount, html.EscapeString(rule)))
 	}
 
 	f.WriteString("</table></body></html>")
 	return nil
+}
+
+func narrativeHeadline(counts map[model.Verdict]int) string {
+	total := 0
+	for _, n := range counts {
+		total += n
+	}
+	if total == 0 {
+		return "No techniques tested."
+	}
+	det := counts[model.Detected]
+	part := counts[model.Partial]
+	miss := counts[model.Missed]
+	errs := counts[model.Errored]
+	return fmt.Sprintf("Top %d exploited-in-the-wild: %d detected / %d partial / %d missed",
+		total, det, part, miss+errs)
 }
 
 // NavigatorLayerReporter writes an ATT&CK Navigator layer JSON file.

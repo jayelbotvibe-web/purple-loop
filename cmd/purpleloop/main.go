@@ -26,6 +26,7 @@ func main() {
 	fs := flag.NewFlagSet("run", flag.ExitOnError)
 	technique := fs.String("technique", "", "Single technique ID, e.g. T1059.004")
 	planFile := fs.String("plan", "", "YAML plan file (e.g. plans/discovery.yml)")
+	arbiterFile := fs.String("arbiter", "", "Arbiter JSON export (threat-intel-arbiter output)")
 	output := fs.String("output", "", "Output file (.html for coverage report, empty = JSON stdout)")
 	dryRun := fs.Bool("dry-run", false, "run the pipeline without a live lab")
 	victim := fs.String("victim-container", "", "Docker container for execution (e.g. purpleloop-victim)")
@@ -35,6 +36,11 @@ func main() {
 	ctx := context.Background()
 
 	switch {
+	case *arbiterFile != "":
+		if err := runArbiter(ctx, *arbiterFile, *output, *dryRun, *victim, *manager); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 	case *planFile != "":
 		if err := runCampaign(ctx, *planFile, *output, *dryRun, *victim, *manager); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -100,6 +106,38 @@ func runCampaign(ctx context.Context, planPath, output string, dryRun bool, vict
 				Verdict:     model.Errored,
 			}
 		}
+		result.Chains = append(result.Chains, chain)
+	}
+	return rep.Write(result)
+}
+
+func runArbiter(ctx context.Context, arbiterPath, output string, dryRun bool, victimContainer, managerContainer string) error {
+	var f feed.ArbiterFeed
+	if err := f.Load(arbiterPath); err != nil {
+		return fmt.Errorf("load arbiter export: %w", err)
+	}
+	tasks, err := f.Next(ctx)
+	if err != nil {
+		return fmt.Errorf("arbiter feed: %w", err)
+	}
+
+	exec := newExec(dryRun, victimContainer)
+	coll := newColl(dryRun, managerContainer)
+	eval := evaluator.PresenceEvaluator{}
+	rep := newReporter(output)
+	target := model.Target{Host: "victim01", Kind: "linux"}
+
+	result := model.CampaignResult{StartedAt: time.Now().UTC()}
+	for _, task := range tasks {
+		chain, err := runTechnique(ctx, exec, coll, eval, task, target)
+		if err != nil {
+			chain = model.ProofChain{
+				TechniqueID: task.TechniqueID,
+				Verdict:     model.Errored,
+			}
+		}
+		chain.SourceCVE = task.SourceCVE
+		chain.ArbiterPriority = task.Priority
 		result.Chains = append(result.Chains, chain)
 	}
 	return rep.Write(result)
