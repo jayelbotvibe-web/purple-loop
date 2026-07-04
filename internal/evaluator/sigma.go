@@ -25,8 +25,14 @@ func (e RuleMatcherEvaluator) Evaluate(rule model.SigmaRule, events []model.Even
 
 	// Load the rule specified
 	rulePath := rule.Path
+	if rulePath == "" {
+		return model.Missed, nil, nil // no rule mapped for this technique
+	}
 	if _, err := os.Stat(rulePath); err != nil {
 		rulePath = filepath.Join(e.RulesDir, filepath.Base(rule.Path))
+	}
+	if rulePath == "" || rulePath == e.RulesDir {
+		return model.Missed, nil, nil
 	}
 	if _, err := os.Stat(rulePath); os.IsNotExist(err) {
 		// Rule doesn't exist — no detection to evaluate
