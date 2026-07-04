@@ -19,8 +19,8 @@ One line per closed issue: date · issue · what shipped · verification · comm
 - 2026-07-04 · #14 · 9 additional Sigma rules + full mapping, 10-technique campaign runs end-to-end · 71e773e
 - 2026-07-04 · #15 · Sigma lint CI + fixture existence check, catches broken rules · a25a92f
 - 2026-07-04 · #16 · Fixture regression test in CI, validates all JSONL fixtures · 4e7d759
-- 2026-07-04 · #17 · BLOCKED — Windows victim VM needs ISO/license (needs-human) · —
-- 2026-07-04 · #18 · BLOCKED — Windows Executor depends on #17 (needs-human) · —
+- 2026-07-04 · #17 · Windows 11 VM: Wazuh agent 002 enrolled, Sysmon installed, 183 events · be4b8fe
+- 2026-07-04 · #18 · SSHExecutor: key-based SSH to Windows victim, runs atomics remotely · 052f609
 - 2026-07-04 · #19 · ArbiterFeed: SSVC action→priority, 10 tasks sorted, arbiter JSON fixture · fe482df
 - 2026-07-04 · #20 · CVE→technique→atomic mapping resolver, 5 CVEs with technique+atomic lookup · 2cc4454
 - 2026-07-04 · #21 · --arbiter flag, priority column + narrative headline in HTML report · 4d4c5c0
