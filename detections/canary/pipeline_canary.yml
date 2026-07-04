@@ -1,0 +1,15 @@
+title: Purple Loop Pipeline Canary
+id: dd6f37e6-af6a-4404-b6a4-f76a37977140
+status: stable
+description: >
+  Positive control. Matches the unique per-run canary marker in a process command line.
+  If this does not fire, the telemetry pipeline is broken - NOT the real detections.
+logsource:
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains: 'purpleloop-canary-'
+  condition: selection
+level: informational
+tags:
+  - purpleloop.canary
