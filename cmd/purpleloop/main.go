@@ -99,7 +99,7 @@ func runCampaign(ctx context.Context, planPath, output string, dryRun bool, vict
 
 	exec := newExec(dryRun, victimContainer)
 	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.PresenceEvaluator{}
+	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
 	rep := newReporter(output)
 	target := model.Target{Host: "victim01", Kind: "linux"}
 
@@ -129,7 +129,7 @@ func runArbiter(ctx context.Context, arbiterPath, output string, dryRun bool, vi
 
 	exec := newExec(dryRun, victimContainer)
 	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.PresenceEvaluator{}
+	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
 	rep := newReporter(output)
 	target := model.Target{Host: "victim01", Kind: "linux"}
 
@@ -157,7 +157,7 @@ func runEmulation(ctx context.Context, emuPath, output string, dryRun bool, vict
 
 	exec := newExec(dryRun, victimContainer)
 	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.PresenceEvaluator{}
+	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
 	rep := newReporter(output)
 	target := model.Target{Host: "victim01", Kind: "linux"}
 
@@ -182,7 +182,7 @@ func runEmulation(ctx context.Context, emuPath, output string, dryRun bool, vict
 func runOne(ctx context.Context, technique, output string, dryRun bool, victimContainer, managerContainer string) error {
 	exec := newExec(dryRun, victimContainer)
 	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.PresenceEvaluator{}
+	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
 	rep := newReporter(output)
 
 	task := model.TechniqueTask{TechniqueID: technique, AtomicIDs: []string{technique + "-1"}}
@@ -229,12 +229,19 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		return model.ProofChain{}, fmt.Errorf("evaluate: %w", err)
 	}
 
+	ruleMatched := ""
+	if verdict == model.Detected || verdict == model.Partial {
+		ruleMatched = rule.Path
+	}
+
 	return model.ProofChain{
 		TechniqueID:     task.TechniqueID,
+		SourceCVE:       task.SourceCVE,
+		ArbiterPriority: task.Priority,
 		Atomic:          atomic,
 		ExecutedAt:      run.StartedAt,
 		EventsCollected: len(events),
-		RuleMatched:     rule.Path,
+		RuleMatched:     ruleMatched,
 		Verdict:         verdict,
 		Evidence:        evidence,
 	}, nil

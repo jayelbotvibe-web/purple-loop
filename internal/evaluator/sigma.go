@@ -1,17 +1,58 @@
-// Package evaluator decides whether collected events satisfy a detection.
-// PresenceEvaluator is a placeholder (DETECTED if any events, else MISSED);
-// Phase 1 replaces it with real Sigma matching.
 package evaluator
 
-import "github.com/jayelbotvibe-web/purple-loop/internal/model"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
 
-type PresenceEvaluator struct{}
+	"github.com/jayelbotvibe-web/purple-loop/internal/model"
+)
 
-func (PresenceEvaluator) Evaluate(rule model.SigmaRule, events []model.Event) (model.Verdict, []model.Event, error) {
-	if len(events) == 0 {
-		return model.Missed, nil, nil
+// RuleMatcherEvaluator evaluates Sigma rules against normalized events.
+// ponytail: replaces PresenceEvaluator with honest rule matching.
+type RuleMatcherEvaluator struct {
+	RulesDir string // e.g. "detections/linux"
+}
+
+// Evaluate applies all rules to all events and returns the best verdict.
+func (e RuleMatcherEvaluator) Evaluate(rule model.SigmaRule, events []model.Event) (model.Verdict, []model.Event, error) {
+	if e.RulesDir == "" {
+		e.RulesDir = "detections/linux"
 	}
-	// Phase 1: parse the Sigma rule and match its detection logic against each
-	// event; return the matching events as evidence.
-	return model.Detected, events, nil
+
+	if len(events) == 0 {
+		return model.NoTelemetry, nil, nil
+	}
+
+	parser := RuleParser{}
+	matcher := Matcher{}
+	normalizer := Normalizer{}
+
+	// Load the rule specified
+	rulePath := rule.Path
+	if _, err := os.Stat(rulePath); err != nil {
+		// Try under RulesDir
+		rulePath = filepath.Join(e.RulesDir, filepath.Base(rule.Path))
+	}
+	parsedRule, err := parser.Parse(rulePath)
+	if err != nil {
+		return model.Errored, nil, fmt.Errorf("parse rule %s: %w", rule.Path, err)
+	}
+
+	// Evaluate each event
+	var matchedEvents []model.Event
+	for _, ev := range events {
+		normalized := normalizer.Normalize(ev.Raw)
+		if len(normalized) == 0 {
+			continue
+		}
+		if matcher.Match(parsedRule, normalized) {
+			matchedEvents = append(matchedEvents, ev)
+		}
+	}
+
+	if len(matchedEvents) > 0 {
+		return model.Detected, matchedEvents, nil
+	}
+	return model.Missed, nil, nil
 }
