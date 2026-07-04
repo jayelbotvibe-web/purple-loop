@@ -3,72 +3,302 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Purple Loop — Architecture</title>
+<title>Purple Loop — System Architecture</title>
 <style>
-  body{font-family:system-ui,sans-serif;max-width:900px;margin:2em auto;padding:0 1em;background:#0d1117;color:#c9d1d9}
-  h1,h2{color:#58a6ff}
+  :root{--bg:#0d1117;--card:#161b22;--border:#30363d;--blue:#58a6ff;--green:#3fb950;--red:#f85149;--orange:#d2991d;--purple:#bc8cff;--text:#c9d1d9;--muted:#8b949e}
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,sans-serif;max-width:1100px;margin:0 auto;padding:2em 1em;background:var(--bg);color:var(--text);line-height:1.6}
+  h1{color:var(--blue);font-size:2em;margin-bottom:0}
+  h1 span{color:var(--muted);font-size:.5em;display:block}
+  h2{color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:2em}
+  h3{color:var(--text);margin-top:1.5em}
   a{color:#79c0ff}
-  .loop{display:flex;gap:1em;flex-wrap:wrap;justify-content:center;margin:2em 0}
-  .box{border:1px solid #30363d;border-radius:8px;padding:1.5em;text-align:center;min-width:120px;background:#161b22}
-  .box strong{display:block;font-size:1.1em;color:#58a6ff;margin-bottom:.5em}
-  .arrow{font-size:1.5em;color:#8b949e;align-self:center}
+  .tagline{color:var(--muted);font-size:1.1em;margin-bottom:2em}
+
+  .pipeline{display:flex;gap:.5em;flex-wrap:wrap;justify-content:center;align-items:stretch;margin:2em 0}
+  .pipe-step{flex:1;min-width:140px;max-width:200px;border:2px solid var(--border);border-radius:12px;padding:1.2em .8em;text-align:center;background:var(--card);position:relative}
+  .pipe-step h4{color:var(--blue);margin:0 0 .5em 0;font-size:1em}
+  .pipe-step p{font-size:.8em;color:var(--muted);margin:.3em 0}
+  .pipe-step .impl{font-size:.75em;color:var(--purple);margin-top:.5em;font-family:monospace}
+  .arrow{font-size:1.5em;color:var(--muted);align-self:center;flex-shrink:0}
+  .pipe-feed{border-color:#58a6ff}.pipe-exec{border-color:#3fb950}.pipe-coll{border-color:#d2991d}.pipe-eval{border-color:#bc8cff}.pipe-rep{border-color:#f85149}
+
+  .verdict-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1em;margin:1.5em 0}
+  .verdict{border:1px solid var(--border);border-radius:8px;padding:1em;background:var(--card);text-align:center}
+  .verdict .label{font-size:1.1em;font-weight:700}
+  .verdict .desc{font-size:.85em;color:var(--muted);margin-top:.3em}
+  .v-detected{border-color:var(--green)}.v-detected .label{color:var(--green)}
+  .v-partial{border-color:var(--orange)}.v-partial .label{color:var(--orange)}
+  .v-missed{border-color:var(--red)}.v-missed .label{color:var(--red)}
+  .v-notelemetry{border-color:var(--muted)}.v-notelemetry .label{color:var(--muted)}
+  .v-inconclusive{border-color:var(--purple)}.v-inconclusive .label{color:var(--purple)}
+
   table{width:100%;border-collapse:collapse;margin:1em 0}
-  th,td{padding:.5em;border:1px solid #30363d;text-align:left}
-  th{background:#161b22}
-  .gap{color:#f85149}.hit{color:#3fb950}
-  pre{background:#161b22;padding:1em;border-radius:6px;overflow-x:auto}
+  th,td{padding:.6em .8em;border:1px solid var(--border);text-align:left;font-size:.9em}
+  th{background:var(--card);color:var(--blue)}
+  td{color:var(--text)}
+  td code{background:#1c2128;padding:.1em .4em;border-radius:4px;font-size:.9em}
+
+  .lab-diagram{display:flex;gap:2em;justify-content:center;align-items:flex-start;margin:1.5em 0;flex-wrap:wrap}
+  .lab-col{border:1px solid var(--border);border-radius:8px;padding:1em;background:var(--card);min-width:280px}
+  .lab-col h4{color:var(--blue);margin-top:0}
+  .lab-col ul{list-style:none;padding:0;margin:0}
+  .lab-col li{padding:.3em 0;font-size:.85em;border-bottom:1px solid var(--border)}
+  .lab-col li:last-child{border:none}
+  .lab-col .agent{color:var(--green)}
+  .lab-col .agent-win{color:var(--orange)}
+
+  .screenshots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5em;margin:1.5em 0}
+  .screenshot{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--card)}
+  .screenshot img{width:100%;display:block}
+  .screenshot .caption{padding:.8em;font-size:.85em;color:var(--muted);border-top:1px solid var(--border)}
+
+  .two-repo{display:flex;gap:1.5em;flex-wrap:wrap;justify-content:center;align-items:center;margin:1.5em 0}
+  .repo-box{border:2px solid var(--border);border-radius:12px;padding:1.5em;background:var(--card);max-width:320px;flex:1}
+  .repo-box h4{color:var(--blue);margin:0 0 .5em 0}
+  .repo-box p{font-size:.85em;color:var(--muted)}
+  .repo-arrow{font-size:2em;color:var(--green);flex-shrink:0}
+
+  .numbers{display:flex;gap:1.5em;justify-content:center;flex-wrap:wrap;margin:1.5em 0}
+  .num-card{text-align:center;padding:1.5em;border:2px solid var(--border);border-radius:12px;background:var(--card);min-width:120px}
+  .num-card .big{font-size:2.5em;font-weight:700}
+  .num-card .label{font-size:.85em;color:var(--muted);margin-top:.3em}
+  .num-detected{border-color:var(--green)}.num-detected .big{color:var(--green)}
+  .num-missed{border-color:var(--red)}.num-missed .big{color:var(--red)}
+  .num-gap{border-color:var(--orange)}.num-gap .big{color:var(--orange)}
+
+  footer{margin-top:3em;padding-top:1em;border-top:1px solid var(--border);color:var(--muted);font-size:.85em;text-align:center}
 </style>
 </head>
 <body>
-<h1>Purple Loop</h1>
-<p>Risk-driven detection validation. Emulates the ATT&CK techniques that matter most and proves whether your Sigma detections catch them — with evidence.</p>
 
-<h2>Core Loop</h2>
-<div class="loop">
-  <div class="box"><strong>Feed</strong>threat-intel-arbiter<br>CVE → technique → atomic</div>
-  <span class="arrow">→</span>
-  <div class="box"><strong>Execute</strong>Docker / SSH<br>Linux + Windows</div>
-  <span class="arrow">→</span>
-  <div class="box"><strong>Collect</strong>Wazuh archives<br>raw telemetry</div>
-  <span class="arrow">→</span>
-  <div class="box"><strong>Evaluate</strong>Sigma rules<br>native Go parser</div>
-  <span class="arrow">→</span>
-  <div class="box"><strong>Report</strong>JSON / HTML<br>ATT&CK Navigator</div>
+<h1>Purple Loop <span>System Architecture &amp; Evidence — v1.2.0</span></h1>
+<p class="tagline">Risk-driven detection validation. Emulates prioritized ATT&amp;CK techniques in an isolated Wazuh lab and proves whether your Sigma detections catch them — with evidence.</p>
+
+<!-- ============ TWO-REPO PIPELINE ============ -->
+<h2>1. The Intel-to-Detection Pipeline</h2>
+<div class="two-repo">
+  <div class="repo-box">
+    <h4>🔴 threat-intel-arbiter</h4>
+    <p>Ingests CISA KEV + MISP feeds. Scores threats with SSVC. Outputs a priority-ordered list of CVEs mapped to ATT&amp;CK techniques.</p>
+    <p style="font-family:monospace;color:var(--purple)">1,147 alerts → top 10 export</p>
+  </div>
+  <div class="repo-arrow">→</div>
+  <div class="repo-box">
+    <h4>🟣 Purple Loop</h4>
+    <p>Loads the prioritized plan. Executes atomics on lab victims. Collects real Wazuh telemetry. Evaluates Sigma rules. Produces an evidence-backed coverage report.</p>
+    <p style="font-family:monospace;color:var(--green)">CVE → technique → atomic → verdict</p>
+  </div>
 </div>
 
-<h2>Architecture</h2>
-<p>The engine is built on five pluggable Go interfaces:</p>
+<!-- ============ CORE PIPELINE ============ -->
+<h2>2. Core Loop — Five Pluggable Interfaces</h2>
+<div class="pipeline">
+  <div class="pipe-step pipe-feed">
+    <h4>📥 Feed</h4>
+    <p>Loads prioritized techniques from plans, arbiter exports, or emulation scripts</p>
+    <div class="impl">StaticFeed<br>ArbiterFeed<br>EmulationFeed</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="pipe-step pipe-exec">
+    <h4>⚡ Execute</h4>
+    <p>Runs Atomic Red Team tests on lab victims in the isolated network</p>
+    <div class="impl">DockerExecutor<br>SSHExecutor<br>DryExecutor</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="pipe-step pipe-coll">
+    <h4>📡 Collect</h4>
+    <p>Queries Wazuh archives.json for raw telemetry in the execution time window</p>
+    <div class="impl">WazuhCollector<br>(archives, not alerts)</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="pipe-step pipe-eval">
+    <h4>🔍 Evaluate</h4>
+    <p>Normalizes events, parses Sigma rules, matches conditions with native Go engine</p>
+    <div class="impl">RuleMatcherEvaluator<br>RuleParser<br>Normalizer</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="pipe-step pipe-rep">
+    <h4>📊 Report</h4>
+    <p>Produces evidence-backed coverage: JSON, HTML grid, or ATT&amp;CK Navigator layer</p>
+    <div class="impl">JSONReporter<br>HTMLReporter<br>NavigatorLayerReporter</div>
+  </div>
+</div>
+
+<!-- ============ VERDICT STATES ============ -->
+<h2>3. Verdict Semantics — What Each Result Means</h2>
+<div class="verdict-grid">
+  <div class="verdict v-detected">
+    <div class="label">DETECTED</div>
+    <div class="desc">Sigma rule condition matched ≥1 event. Rule file named in <code>rule_matched</code>. Matching events in <code>evidence[]</code>.</div>
+  </div>
+  <div class="verdict v-partial">
+    <div class="label">PARTIAL</div>
+    <div class="desc">Primary selection matched, required secondary did not (e.g. command seen, parent context missing).</div>
+  </div>
+  <div class="verdict v-missed">
+    <div class="label">MISSED</div>
+    <div class="desc">Telemetry was collected, but no mapped Sigma rule matched. This is a <strong>genuine detection gap</strong> — the valuable finding.</div>
+  </div>
+  <div class="verdict v-notelemetry">
+    <div class="label">NO_TELEMETRY</div>
+    <div class="desc">Zero events in the collection window. A <em>collection</em> problem, not a detection result. Never counted as coverage.</div>
+  </div>
+  <div class="verdict v-inconclusive">
+    <div class="label">INCONCLUSIVE</div>
+    <div class="desc">Pipeline canary failed. Run is not trusted. Coverage is not reported. Non-zero exit.</div>
+  </div>
+</div>
+
+<!-- ============ PIPELINE CANARY ============ -->
+<h2>4. Pipeline Canary — The Positive Control</h2>
+<p>Before any real techniques run, Purple Loop fires a <strong>pipeline canary</strong> — a known-benign command engineered to be trivially detectable. It proves the full pipeline (execute → telemetry → collect → normalize → match) is healthy <em>per platform</em>.</p>
+<div class="numbers">
+  <div class="num-card num-detected">
+    <div class="big">✔</div>
+    <div class="label">Canary DETECTED</div>
+    <div style="font-size:.8em;color:var(--muted);margin-top:.5em">Pipeline healthy.<br>Every MISSED is a genuine gap.</div>
+  </div>
+  <div class="num-card num-missed">
+    <div class="big">✘</div>
+    <div class="label">Canary NOT detected</div>
+    <div style="font-size:.8em;color:var(--muted);margin-top:.5em">Run is INCONCLUSIVE.<br>Coverage not reported.<br>Pipeline is broken.</div>
+  </div>
+</div>
+<pre style="background:var(--card);padding:1em;border-radius:8px;overflow-x:auto">
+$ <strong>make canary</strong>
+Canary marker: purpleloop-canary-a1b2c3d4
+Canary: DETECTED on windows (evidence: 4 events)</pre>
+
+<!-- ============ LAB ============ -->
+<h2>5. Lab Infrastructure</h2>
+<div class="lab-diagram">
+  <div class="lab-col">
+    <h4>🖥 Wazuh SIEM (Docker)</h4>
+    <ul>
+      <li>Manager 4.9.2 — port 1514/1515</li>
+      <li>Indexer — green, -Xms4g -Xmx4g</li>
+      <li>Dashboard — port 5601</li>
+      <li>Network: <code>purpleloop-lab</code></li>
+    </ul>
+  </div>
+  <div class="lab-col">
+    <h4>🐧 Linux Victim</h4>
+    <ul>
+      <li><span class="agent">Agent 001: victim01</span></li>
+      <li>Ubuntu 22.04, Docker</li>
+      <li>Command output telemetry</li>
+      <li>SCA benchmark scans</li>
+      <li style="color:var(--muted)">Sysmon-for-Linux: pending</li>
+    </ul>
+  </div>
+  <div class="lab-col">
+    <h4>🪟 Windows Victim</h4>
+    <ul>
+      <li><span class="agent-win">Agent 002: windows-vm</span></li>
+      <li>Windows 11 Enterprise eval</li>
+      <li>VMware bridged (192.168.88.13)</li>
+      <li>Sysmon64 with Event ID 1</li>
+      <li>SSH key-auth, firewall ON</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ EVIDENCE ============ -->
+<h2>6. Evidence — Proof of Detection</h2>
+
+<h3>6.1 Pipeline Canary — Live Run</h3>
+<pre style="background:var(--card);padding:1em;border-radius:8px;overflow-x:auto;font-size:.85em">
+$ <strong>go run ./cmd/purpleloop canary</strong>
+Canary marker: purpleloop-canary-b1879f19
+Canary: DETECTED on windows (evidence: 4 events)</pre>
+
+<h3>6.2 Windows Sysmon Detection — Proof Chain</h3>
+<pre style="background:var(--card);padding:1em;border-radius:8px;overflow-x:auto;font-size:.8em">
+{
+  "technique_id": "T1059.004",
+  "verdict": <span style="color:var(--green)">"DETECTED"</span>,
+  "rule_matched": "detections/windows/win_proc_create.yml",
+  "events_collected": 73,
+  "evidence": [{
+    "matched": true,
+    "Image": "C:\\Windows\\SysWOW64\\net.exe",
+    "CommandLine": "net.exe accounts",
+    "ParentImage": "C:\\Program Files (x86)\\ossec-agent\\wazuh-agent.exe",
+    "User": "NT AUTHORITY\\SYSTEM"
+  }]
+}</pre>
+
+<h3>6.3 Wazuh — Raw Sysmon Event (Event ID 1)</h3>
+<pre style="background:var(--card);padding:1em;border-radius:8px;overflow-x:auto;font-size:.75em">
+{
+  "agent": {"id":"002","name":"windows-vm"},
+  "decoder": {"name":"windows_eventchannel"},
+  "data": {"win": {"system": {
+    "providerName": "Microsoft-Windows-Sysmon",
+    "eventID": "1",
+    "channel": "Microsoft-Windows-Sysmon/Operational"
+  }, "eventdata": {
+    "image": "C:\\Windows\\SysWOW64\\net.exe",
+    "commandLine": "net.exe accounts",
+    "parentImage": "C:\\Program Files (x86)\\ossec-agent\\wazuh-agent.exe",
+    "user": "NT AUTHORITY\\SYSTEM"
+  }}}
+}</pre>
+
+<h3>6.4 Coverage Report</h3>
+<p>Sample HTML output: <a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/reports/samples/coverage.html">reports/samples/coverage.html</a></p>
+
+<h3>6.5 Negative Test — Canary Fails When Pipeline Broken</h3>
+<pre style="background:var(--card);padding:1em;border-radius:8px;overflow-x:auto;font-size:.85em">
+$ <strong>sc stop WazuhSvc</strong>           # break telemetry
+$ <strong>go run ./cmd/purpleloop canary</strong>
+Canary marker: purpleloop-canary-cb83541e
+<em>(times out — pipeline broken)</em>
+exit=1
+
+$ <strong>sc start WazuhSvc</strong>          # restore
+$ <strong>go run ./cmd/purpleloop canary</strong>
+Canary: DETECTED on windows (evidence: 4 events)</pre>
+
+<!-- ============ CURRENT COVERAGE ============ -->
+<h2>7. Current Coverage (v1.2.0)</h2>
+<div class="numbers">
+  <div class="num-card num-detected">
+    <div class="big">✔</div>
+    <div class="label">Windows</div>
+    <div style="font-size:.8em;color:var(--muted)">Sysmon Event ID 1 flowing<br>Canary confirmed<br>Detection verified</div>
+  </div>
+  <div class="num-card num-gap">
+    <div class="big">⏳</div>
+    <div class="label">Linux</div>
+    <div style="font-size:.8em;color:var(--muted)">NO_TELEMETRY<br>Sysmon-for-Linux pending<br>auditd fallback planned</div>
+  </div>
+</div>
+
+<!-- ============ CI ============ -->
+<h2>8. Detection-as-Code CI</h2>
 <table>
-<tr><th>Interface</th><th>Role</th><th>Implementations</th></tr>
-<tr><td>Feed</td><td>Loads prioritized techniques</td><td>StaticFeed, ArbiterFeed, EmulationFeed</td></tr>
-<tr><td>Executor</td><td>Runs atomics on targets</td><td>DockerExecutor, SSHExecutor, DryExecutor</td></tr>
-<tr><td>Collector</td><td>Queries Wazuh for telemetry</td><td>WazuhCollector (archives.json)</td></tr>
-<tr><td>Evaluator</td><td>Matches Sigma rules against events</td><td>RuleMatcherEvaluator</td></tr>
-<tr><td>Reporter</td><td>Produces coverage output</td><td>JSONReporter, HTMLReporter, NavigatorLayerReporter</td></tr>
+<tr><th>Job</th><th>What it enforces</th></tr>
+<tr><td><code>go build ./cmd/... ./internal/...</code></td><td>Compilation</td></tr>
+<tr><td><code>go vet</code></td><td>Static analysis</td></tr>
+<tr><td><code>go test ./internal/...</code></td><td>Unit tests + regression (all rules, all fixtures)</td></tr>
+<tr><td><code>sigma lint</code></td><td>Required fields (title, id, status, logsource, detection)</td></tr>
+<tr><td><code>fixture regression</code></td><td>Every rule: positives MUST match, negatives MUST reject</td></tr>
+<tr><td><code>gitleaks</code></td><td>No secrets committed</td></tr>
 </table>
 
-<h2>Verdict Semantics</h2>
-<table>
-<tr><th>Verdict</th><th>Meaning</th></tr>
-<tr><td class="hit">DETECTED</td><td>Sigma rule condition matched an event</td></tr>
-<tr><td>PARTIAL</td><td>Primary selection matched, secondary didn't</td></tr>
-<tr><td class="gap">MISSED</td><td>Events collected, no rule matched — real gap</td></tr>
-<tr><td>NO_TELEMETRY</td><td>Zero events in window — collection problem</td></tr>
-<tr><td>INCONCLUSIVE</td><td>Pipeline canary failed — run not trusted</td></tr>
-</table>
-
-<h2>Lab</h2>
-<pre>
-Wazuh 4.9.2 (manager + indexer + dashboard)
-├── Agent 001: purpleloop-victim (Ubuntu, Docker)
-└── Agent 002: windows-vm (Windows 11, VMware bridged)
-</pre>
-
-<h2>Links</h2>
+<!-- ============ LINKS ============ -->
+<h2>9. Project Links</h2>
 <ul>
-<li><a href="https://github.com/jayelbotvibe-web/purple-loop">GitHub repo</a></li>
-<li><a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/DESIGN.md">DESIGN.md</a></li>
-<li><a href="https://github.com/jayelbotvibe-web/threat-intel-arbiter">threat-intel-arbiter</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/purple-loop">GitHub Repository</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/DESIGN.md">DESIGN.md — Full Architecture</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/README.md">README — Quickstart &amp; Results</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/threat-intel-arbiter">threat-intel-arbiter — Threat Intel Feed</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/CHANGELOG.md">CHANGELOG</a></li>
+<li><a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/docs/TEST-RUN.md">Test Run Documentation</a></li>
 </ul>
+
+<footer>Purple Loop v1.2.0 · MIT License · github.com/jayelbotvibe-web/purple-loop</footer>
 </body>
 </html>
