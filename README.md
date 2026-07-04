@@ -7,8 +7,9 @@
 Risk-driven detection validation. A Go purple-team engine that proves whether you
 can detect the threats that matter — in priority order, with evidence.
 
-> **Status:** v1.0 — 24/24 issues closed. Linux + Windows victims, live telemetry,
-> campaigns producing real DETECTED verdicts with evidence.
+> **Status:** v1.1 — real Sigma evaluation. 10/10 techniques produce telemetry.
+> 0/10 detected with real rules — the lab lacks process-creation event sources.
+> Dry-run: DETECTED (validates the pipeline). See REMEDIATION-v1.1.md.
 
 ## What it does
 
