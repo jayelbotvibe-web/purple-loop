@@ -1,0 +1,7 @@
+{
+  "_note": "Seed mapping technique -> atomic test ids -> detection rules. Extend as techniques are added. Bootstraps from AttackRuleMap; Phase 4 adds CVE->technique resolution.",
+  "T1059.004": {
+    "atomics": ["T1059.004-1"],
+    "rules": ["detections/linux/proc_creation_susp_shell.yml"]
+  }
+}

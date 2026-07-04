@@ -1,0 +1,24 @@
+# Auto-merged with the official single-node docker-compose.yml.
+# Purpose: cap indexer memory for a laptop, and add our victim host.
+services:
+  wazuh.indexer:
+    environment:
+      - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"
+    mem_limit: 8g
+
+  victim:
+    build:
+      context: ../../victim
+    image: purpleloop/victim:latest
+    container_name: purpleloop-victim
+    hostname: victim01
+    restart: unless-stopped
+    cap_add:
+      - AUDIT_CONTROL
+      - AUDIT_READ
+      - SYS_PTRACE
+    environment:
+      - WAZUH_MANAGER=wazuh.manager
+      - WAZUH_AGENT_NAME=victim01
+    depends_on:
+      - wazuh.manager
