@@ -12,11 +12,19 @@ jobs:
         with:
           go-version: "1.22"
       - name: build
-        run: go build ./...
+        run: go build ./cmd/... ./internal/...
       - name: vet
-        run: go vet ./...
+        run: go vet ./cmd/... ./internal/...
       - name: test
-        run: go test ./... 2>/dev/null || echo "no tests yet"
+        run: go test ./internal/... -count=1
+  detections:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: sigma lint
+        run: |
+          pip install pyyaml
+          python3 scripts/lint-sigma.py
   secrets:
     runs-on: ubuntu-latest
     steps:
