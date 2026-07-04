@@ -7,8 +7,8 @@
 Risk-driven detection validation. A Go purple-team engine that proves whether you
 can detect the threats that matter — in priority order, with evidence.
 
-> **Status:** v1.0 — full pipeline operational. Lab running, campaigns executing,
-> reports generating, arbiter integration live.
+> **Status:** v1.0 — 24/24 issues closed. Linux + Windows victims, live telemetry,
+> campaigns producing real DETECTED verdicts with evidence.
 
 ## What it does
 
@@ -116,6 +116,6 @@ Every Sigma rule has positive/negative fixtures. CI validates:
 | v0.1.0 | Lab foundation | ✓ |
 | v0.2.0 | MVP loop | ✓ |
 | v0.3.0 | Engine & reports | ✓ |
-| v0.4.0 | CI & Windows | ✓ (#17-18 blocked pending VM) |
+| v0.4.0 | CI & Windows | ✓ Linux + Windows victims, Sysmon, SSH executor |
 | v0.5.0 | Arbiter integration | ✓ |
 | v1.0.0 | Emulation & release | ✓ |
