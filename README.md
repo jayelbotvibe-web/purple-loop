@@ -7,8 +7,8 @@
 Risk-driven detection validation. A Go purple-team engine that proves whether you
 can detect the threats that matter — in priority order, with evidence.
 
-> **Status:** v1.1 — real Sigma evaluation. Dry-run DETECTED. Live: 0/10 detected (gap:
-> lab telemetry lacks Sysmon process-creation fields). Pipeline + CI verified.
+> **Status:** v1.2 — real detection with Sysmon telemetry. Windows: DETECTED (Sysmon Event ID 1).
+> Linux: NO_TELEMETRY (Sysmon-for-Linux pending). Windows rule + normalizer verified.
 
 ## What it does
 
