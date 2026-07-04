@@ -25,6 +25,7 @@ func main() {
 	fs := flag.NewFlagSet("run", flag.ExitOnError)
 	technique := fs.String("technique", "", "Single technique ID, e.g. T1059.004")
 	planFile := fs.String("plan", "", "YAML plan file (e.g. plans/discovery.yml)")
+	output := fs.String("output", "", "Output file (.html for coverage report, empty = JSON stdout)")
 	dryRun := fs.Bool("dry-run", false, "run the pipeline without a live lab")
 	victim := fs.String("victim-container", "", "Docker container for execution (e.g. purpleloop-victim)")
 	manager := fs.String("manager-container", "", "Docker container for Wazuh manager")
@@ -34,12 +35,12 @@ func main() {
 
 	switch {
 	case *planFile != "":
-		if err := runCampaign(ctx, *planFile, *dryRun, *victim, *manager); err != nil {
+		if err := runCampaign(ctx, *planFile, *output, *dryRun, *victim, *manager); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
 	case *technique != "":
-		if err := runOne(ctx, *technique, *dryRun, *victim, *manager); err != nil {
+		if err := runOne(ctx, *technique, *output, *dryRun, *victim, *manager); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
@@ -63,7 +64,14 @@ func newColl(dryRun bool, managerContainer string) model.Collector {
 	return &collector.WazuhCollector{ManagerContainer: managerContainer}
 }
 
-func runCampaign(ctx context.Context, planPath string, dryRun bool, victimContainer, managerContainer string) error {
+func newReporter(output string) model.Reporter {
+	if output != "" {
+		return report.HTMLReporter{Path: output}
+	}
+	return report.JSONReporter{Out: os.Stdout}
+}
+
+func runCampaign(ctx context.Context, planPath, output string, dryRun bool, victimContainer, managerContainer string) error {
 	var f feed.StaticFeed
 	if err := f.Load(planPath); err != nil {
 		return fmt.Errorf("load plan: %w", err)
@@ -76,7 +84,7 @@ func runCampaign(ctx context.Context, planPath string, dryRun bool, victimContai
 	exec := newExec(dryRun, victimContainer)
 	coll := newColl(dryRun, managerContainer)
 	eval := evaluator.PresenceEvaluator{}
-	rep := report.JSONReporter{Out: os.Stdout}
+	rep := newReporter(output)
 	target := model.Target{Host: "victim01", Kind: "linux"}
 
 	result := model.CampaignResult{StartedAt: time.Now().UTC()}
@@ -93,11 +101,11 @@ func runCampaign(ctx context.Context, planPath string, dryRun bool, victimContai
 	return rep.Write(result)
 }
 
-func runOne(ctx context.Context, technique string, dryRun bool, victimContainer, managerContainer string) error {
+func runOne(ctx context.Context, technique, output string, dryRun bool, victimContainer, managerContainer string) error {
 	exec := newExec(dryRun, victimContainer)
 	coll := newColl(dryRun, managerContainer)
 	eval := evaluator.PresenceEvaluator{}
-	rep := report.JSONReporter{Out: os.Stdout}
+	rep := newReporter(output)
 
 	task := model.TechniqueTask{TechniqueID: technique, AtomicIDs: []string{technique + "-1"}}
 	target := model.Target{Host: "victim01", Kind: "linux"}
