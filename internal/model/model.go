@@ -34,10 +34,11 @@ type Target struct {
 
 // AtomicTest is a single Atomic Red Team test mapped to an ATT&CK technique.
 type AtomicTest struct {
-	ID          string `json:"id"`
-	TechniqueID string `json:"technique_id"`
-	Command     string `json:"command"`
-	Executor    string `json:"executor"`
+	ID             string `json:"id"`
+	TechniqueID    string `json:"technique_id"`
+	Command        string `json:"command"`
+	CleanupCommand string `json:"cleanup_command,omitempty"`
+	Executor       string `json:"executor"`
 }
 
 // RunResult is what the Executor records about one atomic execution.
