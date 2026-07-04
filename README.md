@@ -42,7 +42,18 @@ go run ./cmd/purpleloop run --plan plans/discovery.yml --output report.html
 
 # Priority-ordered from arbiter
 go run ./cmd/purpleloop run --arbiter testdata/arbiter-export.json --output report.html
+```
 
+### Windows victim (optional)
+
+```bash
+# On the Windows VM (PowerShell as Admin):
+# 1. Copy lab/windows/provision.ps1 to the VM
+# 2. Run: powershell -ExecutionPolicy Bypass -File provision.ps1
+# 3. Set up SSH: Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+#    Start-Service sshd; Set-Service -Name sshd -StartupType Automatic
+# 4. Copy your SSH key: ssh-copy-id windows-vm@<windows-ip>
+```
 # Multi-stage actor emulation
 go run ./cmd/purpleloop run --emulation emulation/apt29-subset.yml --output report.html
 
