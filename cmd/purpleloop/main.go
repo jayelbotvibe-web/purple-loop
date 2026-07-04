@@ -27,6 +27,7 @@ func main() {
 	technique := fs.String("technique", "", "Single technique ID, e.g. T1059.004")
 	planFile := fs.String("plan", "", "YAML plan file (e.g. plans/discovery.yml)")
 	arbiterFile := fs.String("arbiter", "", "Arbiter JSON export (threat-intel-arbiter output)")
+	emulationFile := fs.String("emulation", "", "Multi-stage emulation plan (e.g. emulation/discovery-chain.yml)")
 	output := fs.String("output", "", "Output file (.html for coverage report, empty = JSON stdout)")
 	dryRun := fs.Bool("dry-run", false, "run the pipeline without a live lab")
 	victim := fs.String("victim-container", "", "Docker container for execution (e.g. purpleloop-victim)")
@@ -38,6 +39,11 @@ func main() {
 	switch {
 	case *arbiterFile != "":
 		if err := runArbiter(ctx, *arbiterFile, *output, *dryRun, *victim, *manager); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+	case *emulationFile != "":
+		if err := runEmulation(ctx, *emulationFile, *output, *dryRun, *victim, *manager); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
@@ -139,6 +145,36 @@ func runArbiter(ctx context.Context, arbiterPath, output string, dryRun bool, vi
 		chain.SourceCVE = task.SourceCVE
 		chain.ArbiterPriority = task.Priority
 		result.Chains = append(result.Chains, chain)
+	}
+	return rep.Write(result)
+}
+
+func runEmulation(ctx context.Context, emuPath, output string, dryRun bool, victimContainer, managerContainer string) error {
+	plan, err := feed.LoadEmulation(emuPath)
+	if err != nil {
+		return fmt.Errorf("load emulation: %w", err)
+	}
+
+	exec := newExec(dryRun, victimContainer)
+	coll := newColl(dryRun, managerContainer)
+	eval := evaluator.PresenceEvaluator{}
+	rep := newReporter(output)
+	target := model.Target{Host: "victim01", Kind: "linux"}
+
+	result := model.CampaignResult{StartedAt: time.Now().UTC()}
+	for _, stage := range plan.Stages {
+		for _, task := range stage.ToTasks() {
+			chain, err := runTechnique(ctx, exec, coll, eval, task, target)
+			if err != nil {
+				chain = model.ProofChain{
+					TechniqueID: task.TechniqueID,
+					Verdict:     model.Errored,
+				}
+			}
+			// ponytail: per-stage verdict tracking via priority field
+			chain.ArbiterPriority = task.Priority
+			result.Chains = append(result.Chains, chain)
+		}
 	}
 	return rep.Write(result)
 }
