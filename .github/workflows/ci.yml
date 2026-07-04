@@ -25,6 +25,8 @@ jobs:
         run: |
           pip install pyyaml
           python3 scripts/lint-sigma.py
+      - name: fixture regression
+        run: python3 scripts/regression-test.py
   secrets:
     runs-on: ubuntu-latest
     steps:
