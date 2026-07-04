@@ -1,0 +1,59 @@
+{
+  "alerts": [
+    {
+      "id": "ALERT-001",
+      "event_id": "EVT-001",
+      "severity": "critical",
+      "confidence": "high",
+      "action": "Act",
+      "explanation": "Apache Log4j RCE — CVE-2021-44228 exploited in the wild, KEV catalogued, exact version match",
+      "matched_apps": ["apache-log4j"],
+      "cves": ["CVE-2021-44228"],
+      "techniques": ["T1059", "T1190", "T1210"]
+    },
+    {
+      "id": "ALERT-002",
+      "event_id": "EVT-002",
+      "severity": "high",
+      "confidence": "high",
+      "action": "Attend",
+      "explanation": "Windows Print Spooler RCE — CVE-2021-34527, KEV catalogued",
+      "matched_apps": ["windows-print-spooler"],
+      "cves": ["CVE-2021-34527"],
+      "techniques": ["T1547", "T1068"]
+    },
+    {
+      "id": "ALERT-003",
+      "event_id": "EVT-003",
+      "severity": "medium",
+      "confidence": "medium",
+      "action": "Track*",
+      "explanation": "Exchange Server SSRF — CVE-2021-26855",
+      "matched_apps": ["exchange-server"],
+      "cves": ["CVE-2021-26855"],
+      "techniques": ["T1190", "T1505"]
+    },
+    {
+      "id": "ALERT-004",
+      "event_id": "EVT-004",
+      "severity": "low",
+      "confidence": "low",
+      "action": "Track",
+      "explanation": "Generic phishing campaign — CVE-2023-23397",
+      "matched_apps": ["outlook"],
+      "cves": ["CVE-2023-23397"],
+      "techniques": ["T1566"]
+    },
+    {
+      "id": "ALERT-005",
+      "event_id": "EVT-005",
+      "severity": "high",
+      "confidence": "high",
+      "action": "Act",
+      "explanation": "Citrix ADC RCE — CVE-2019-19781, exploited in the wild",
+      "matched_apps": ["citrix-adc"],
+      "cves": ["CVE-2019-19781"],
+      "techniques": ["T1190", "T1133"]
+    }
+  ]
+}
