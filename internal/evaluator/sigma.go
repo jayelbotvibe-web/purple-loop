@@ -9,12 +9,11 @@ import (
 )
 
 // RuleMatcherEvaluator evaluates Sigma rules against normalized events.
-// ponytail: replaces PresenceEvaluator with honest rule matching.
 type RuleMatcherEvaluator struct {
 	RulesDir string // e.g. "detections/linux"
 }
 
-// Evaluate applies all rules to all events and returns the best verdict.
+// Evaluate applies the rule to all events and returns the best verdict.
 func (e RuleMatcherEvaluator) Evaluate(rule model.SigmaRule, events []model.Event) (model.Verdict, []model.Event, error) {
 	if e.RulesDir == "" {
 		e.RulesDir = "detections/linux"
@@ -24,16 +23,20 @@ func (e RuleMatcherEvaluator) Evaluate(rule model.SigmaRule, events []model.Even
 		return model.NoTelemetry, nil, nil
 	}
 
+	// Load the rule specified
+	rulePath := rule.Path
+	if _, err := os.Stat(rulePath); err != nil {
+		rulePath = filepath.Join(e.RulesDir, filepath.Base(rule.Path))
+	}
+	if _, err := os.Stat(rulePath); os.IsNotExist(err) {
+		// Rule doesn't exist — no detection to evaluate
+		return model.Missed, nil, nil
+	}
+
 	parser := RuleParser{}
 	matcher := Matcher{}
 	normalizer := Normalizer{}
 
-	// Load the rule specified
-	rulePath := rule.Path
-	if _, err := os.Stat(rulePath); err != nil {
-		// Try under RulesDir
-		rulePath = filepath.Join(e.RulesDir, filepath.Base(rule.Path))
-	}
 	parsedRule, err := parser.Parse(rulePath)
 	if err != nil {
 		return model.Errored, nil, fmt.Errorf("parse rule %s: %w", rule.Path, err)
