@@ -25,8 +25,12 @@ lab-up: ## bring the merged Wazuh stack + victim up
 lab-down: ## stop the stack (keeps data)
 	@cd $(LAB_DIR) && docker compose down
 
-verify: ## binary health check — must pass before proceeding
+verify: ## binary health check + canary — must pass before proceeding
 	@bash scripts/verify-lab.sh
+	@go run ./cmd/purpleloop canary || (echo "CANARY FAILED — pipeline broken" && false)
+
+canary: ## run the pipeline positive control
+	@go run ./cmd/purpleloop canary
 
 build: ## compile everything
 	@go build ./cmd/... ./internal/...

@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jayelbotvibe-web/purple-loop/internal/collector"
-	"github.com/jayelbotvibe-web/purple-loop/internal/evaluator"
+		"github.com/jayelbotvibe-web/purple-loop/internal/collector"
+		"github.com/jayelbotvibe-web/purple-loop/internal/canary"
+		"github.com/jayelbotvibe-web/purple-loop/internal/evaluator"
 	"github.com/jayelbotvibe-web/purple-loop/internal/executor"
 	"github.com/jayelbotvibe-web/purple-loop/internal/feed"
 	"github.com/jayelbotvibe-web/purple-loop/internal/model"
@@ -35,7 +36,17 @@ var techniqueRuleMap = map[string]string{
 }
 
 func main() {
-	if len(os.Args) < 2 || os.Args[1] != "run" {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "usage: purpleloop run|canary [...]")
+		os.Exit(1)
+	}
+
+	if os.Args[1] == "canary" {
+		runCanaryCmd()
+		return
+	}
+
+	if os.Args[1] != "run" {
 		fmt.Fprintln(os.Stderr, "usage: purpleloop run [--technique <ID> | --plan <file>] [flags]")
 		os.Exit(2)
 	}
@@ -255,6 +266,7 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		ruleMatched = rule.Path
 	}
 
+
 	return model.ProofChain{
 		TechniqueID:     task.TechniqueID,
 		SourceCVE:       task.SourceCVE,
@@ -266,4 +278,24 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		Verdict:         verdict,
 		Evidence:        evidence,
 	}, nil
+}
+
+func runCanaryCmd() {
+	marker := canary.NewMarker()
+	ctx := context.Background()
+	exec := &executor.SSHExecutor{Host: "192.168.88.13", User: "windows-vm", Password: "pa$$word"}
+	coll := &collector.WazuhCollector{ManagerContainer: "single-node-wazuh.manager-1"}
+	target := model.Target{Host: "windows-vm", Kind: "windows"}
+
+	fmt.Printf("Canary marker: %s\n", marker)
+	result := canary.Check(ctx, marker, exec, coll, "windows", target, false)
+	if result.Healthy {
+		fmt.Printf("Canary: DETECTED on %s (evidence: %d events)\n", result.Platform, len(result.Evidence))
+	} else {
+		fmt.Printf("Canary: NOT DETECTED on %s — pipeline broken\n", result.Platform)
+		if result.Err != nil {
+			fmt.Printf("Error: %v\n", result.Err)
+		}
+		os.Exit(1)
+	}
 }

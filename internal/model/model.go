@@ -17,6 +17,7 @@ const (
 	Partial      Verdict = "PARTIAL"
 	Missed       Verdict = "MISSED"
 	NoTelemetry  Verdict = "NO_TELEMETRY"
+	Inconclusive Verdict = "INCONCLUSIVE"
 	Errored      Verdict = "ERROR"
 )
 
