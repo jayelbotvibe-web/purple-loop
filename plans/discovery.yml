@@ -1,0 +1,10 @@
+# A Discovery-heavy campaign plan (Phase 2). Each entry is one technique to
+# validate. Phase 4 replaces static plans with priority-ordered arbiter output.
+name: discovery
+description: Baseline discovery-technique coverage check
+techniques:
+  - technique_id: T1059.004
+    atomic_ids: [T1059.004-1]
+  # add more as detections/ and mappings/ grow, e.g.:
+  # - technique_id: T1087.001
+  #   atomic_ids: [T1087.001-1]

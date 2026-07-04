@@ -1,0 +1,22 @@
+# secrets — never commit
+.env
+lab/secrets/
+*.pem
+*.key
+
+# vendored / generated lab
+lab/wazuh-docker/
+lab/**/config/**/*.pem
+
+# go
+/bin/
+*.test
+coverage.out
+
+# reports (keep samples/ only)
+reports/
+!reports/samples/
+
+# os / editor
+.DS_Store
+*.swp

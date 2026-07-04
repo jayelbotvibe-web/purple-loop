@@ -1,0 +1,2 @@
+{"Image":"/usr/bin/apt","ParentImage":"/bin/bash","User":"root","CommandLine":"apt update"}
+{"Image":"/usr/bin/id","ParentImage":"/usr/lib/systemd/systemd","User":"root","CommandLine":"id"}

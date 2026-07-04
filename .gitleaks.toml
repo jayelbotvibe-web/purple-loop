@@ -1,0 +1,9 @@
+title = "purple-loop gitleaks config"
+[extend]
+useDefault = true
+[allowlist]
+description = "lab fixtures and docs may contain example-only strings"
+paths = [
+  '''detections/tests/.*\.jsonl''',
+  '''docs/.*\.md''',
+]
