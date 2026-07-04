@@ -208,29 +208,25 @@ Canary: DETECTED on windows (evidence: 4 events)</pre>
 <!-- ============ EVIDENCE ============ -->
 <h2>6. Evidence — Proof of Detection</h2>
 
-<h3>6.1 Pipeline Canary — Live Run</h3>
-<img src="evidence/canary-run.png" alt="Pipeline canary live run" style="width:100%;max-width:800px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
+<h3>6.1 Lab Status — All Containers Running</h3>
+<img src="evidence/lab-status.png" alt="Docker ps showing Wazuh stack running" style="width:100%;max-width:900px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
 
-<h3>6.2 Windows Sysmon Detection — Proof Chain</h3>
-<pre style="background:var(--card);padding:1em;border-radius:8px;overflow-x:auto;font-size:.8em">
-{
-  "technique_id": "T1059.004",
-  "verdict": <span style="color:var(--green)">"DETECTED"</span>,
-  "rule_matched": "detections/windows/win_proc_create.yml",
-  "events_collected": 73,
-  "evidence": [{
-    "matched": true,
-    "Image": "C:\\Windows\\SysWOW64\\net.exe",
-    "CommandLine": "net.exe accounts",
-    "ParentImage": "C:\\Program Files (x86)\\ossec-agent\\wazuh-agent.exe",
-    "User": "NT AUTHORITY\\SYSTEM"
-  }]
-}</pre>
+<h3>6.2 Wazuh Agent List — Both Active</h3>
+<img src="evidence/agent-list.png" alt="Wazuh agent list showing both agents Active" style="width:100%;max-width:900px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
 
-<h3>6.3 Wazuh — Raw Sysmon Event (Event ID 1)</h3>
-<img src="evidence/sysmon-event.png" alt="Real Wazuh Sysmon Event ID 1 captured from archives" style="width:100%;max-width:800px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
+<h3>6.3 Pipeline Canary — Live Run</h3>
+<img src="evidence/canary-run.png" alt="Pipeline canary live run" style="width:100%;max-width:900px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
 
-<h3>6.4 Coverage Report</h3>
+<h3>6.4 Sysmon Event ID 1 — Captured from Wazuh Archives</h3>
+<img src="evidence/sysmon-event.png" alt="Real Wazuh Sysmon Event ID 1" style="width:100%;max-width:900px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
+
+<h3>6.5 Dry-Run Proof — Technique T1059.004 DETECTED</h3>
+<img src="evidence/dry-run-proof.png" alt="T1059.004 dry run returns DETECTED with rule_matched" style="width:100%;max-width:900px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
+
+<h3>6.6 Go Tests — All Passing</h3>
+<img src="evidence/go-test.png" alt="All Go tests passing" style="width:100%;max-width:900px;border:1px solid var(--border);border-radius:8px;margin:1em 0">
+
+<h3>6.7 Coverage Report</h3>
 <p>Sample HTML output: <a href="https://github.com/jayelbotvibe-web/purple-loop/blob/main/reports/samples/coverage.html">reports/samples/coverage.html</a></p>
 
 <h3>6.5 Negative Test — Canary Fails When Pipeline Broken</h3>
