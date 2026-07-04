@@ -42,7 +42,7 @@ func main() {
 // select -> execute -> collect -> evaluate -> proof chain -> report.
 func runOne(ctx context.Context, technique, wazuhURL string) error {
 	var exec model.Executor = executor.DryExecutor{}
-	var coll model.Collector = collector.WazuhCollector{BaseURL: wazuhURL}
+	var coll model.Collector = &collector.WazuhCollector{BaseURL: wazuhURL}
 	var eval model.Evaluator = evaluator.PresenceEvaluator{}
 	var rep model.Reporter = report.JSONReporter{Out: os.Stdout}
 
