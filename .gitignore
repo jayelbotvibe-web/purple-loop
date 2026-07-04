@@ -6,6 +6,7 @@ lab/secrets/
 
 # vendored / generated lab
 lab/wazuh-docker/
+lab/atomic-red-team/
 lab/**/config/**/*.pem
 
 # go
