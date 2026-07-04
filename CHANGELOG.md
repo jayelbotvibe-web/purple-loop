@@ -11,18 +11,21 @@ All notable changes to this project follow Keep a Changelog and Semantic Version
 - 10 Sigma rules with positive/negative fixtures
 - 10-technique discovery campaign plan
 - Campaign orchestrator with `--plan` flag
-- Live lab execution: DockerExecutor (docker exec), WazuhCollector (alerts.json)
-- Real ProofChain output with verdict + evidence from the lab
-- Test suite: 9 tests across 6 packages (model, collector, executor, evaluator, feed, mapping)
+- Live lab execution: DockerExecutor (docker exec), WazuhCollector (archives.json)
+- SSHExecutor for Windows victims via key-based SSH
+- Windows 11 victim: Wazuh agent + Sysmon, 183+ events flowing
+- Real ProofChain output with DETECTED verdict + evidence from live lab
+- Test suite: 9 tests across 6 packages
 
 ### Changed
-- Go build/vet scoped to `./cmd/... ./internal/...` to exclude vendored lab dirs
-- `versions.env` INDEXER_HEAP quoted for Make compatibility
-- `verify-lab.sh` uses dynamic container name resolution
+- Collector uses archives.json (all events) instead of alerts.json (rule-triggered only)
+- 10-minute telemetry window with 10-second ingest delay for reliable event capture
+- Go build/vet scoped to `./cmd/... ./internal/...`
 
 ### Fixed
-- Indexer password corrected in verify-lab.sh (SecretPassword)
-- Wazuh archives logging enabled for Phase 1 event collection
+- INDEXER_HEAP quoting in versions.env for Make compatibility
+- verify-lab.sh container name resolution and indexer password
+- Wazuh archives logging enabled for full event capture
 
 ## [0.1.0] — 2026-07-04
 ### Added
