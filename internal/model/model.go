@@ -13,10 +13,11 @@ import (
 type Verdict string
 
 const (
-	Detected Verdict = "DETECTED"
-	Partial  Verdict = "PARTIAL"
-	Missed   Verdict = "MISSED"
-	Errored  Verdict = "ERROR"
+	Detected     Verdict = "DETECTED"
+	Partial      Verdict = "PARTIAL"
+	Missed       Verdict = "MISSED"
+	NoTelemetry  Verdict = "NO_TELEMETRY"
+	Errored      Verdict = "ERROR"
 )
 
 // TimeWindow bounds a telemetry query to an execution's real time span.
