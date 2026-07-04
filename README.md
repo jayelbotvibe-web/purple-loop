@@ -7,9 +7,8 @@
 Risk-driven detection validation. A Go purple-team engine that proves whether you
 can detect the threats that matter — in priority order, with evidence.
 
-> **Status:** v1.1 — real Sigma evaluation. 10/10 techniques produce telemetry.
-> 0/10 detected with real rules — the lab lacks process-creation event sources.
-> Dry-run: DETECTED (validates the pipeline). See REMEDIATION-v1.1.md.
+> **Status:** v1.1 — real Sigma evaluation. Dry-run DETECTED. Live: 0/10 detected (gap:
+> lab telemetry lacks Sysmon process-creation fields). Pipeline + CI verified.
 
 ## What it does
 
@@ -82,8 +81,7 @@ $ go run ./cmd/purpleloop run --plan plans/discovery.yml --dry-run
 }
 ```
 
-HTML report shows priority column, CVE, verdict breakdown, and narrative headline:
-*"Top 10 exploited-in-the-wild: 10 detected / 0 partial / 0 missed"*
+HTML report shows priority column, CVE, verdict breakdown, and narrative headline.
 
 ## The two-repo pipeline
 

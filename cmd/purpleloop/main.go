@@ -223,7 +223,9 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		return model.ProofChain{}, fmt.Errorf("collect: %w", err)
 	}
 
-	rule := model.SigmaRule{Path: "detections/linux/proc_creation_susp_shell.yml", Title: "Suspicious shell"}
+	// Resolve rule path from technique — unmapped techniques get MISSED
+	rulePath := fmt.Sprintf("detections/linux/%s.yml", task.TechniqueID)
+	rule := model.SigmaRule{Path: rulePath, Title: task.TechniqueID}
 	verdict, evidence, err := eval.Evaluate(rule, events)
 	if err != nil {
 		return model.ProofChain{}, fmt.Errorf("evaluate: %w", err)
