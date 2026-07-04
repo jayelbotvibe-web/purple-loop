@@ -31,7 +31,11 @@ func (c *WazuhCollector) Query(ctx context.Context, w model.TimeWindow, host str
 	if c.ManagerContainer == "" && c.alertsPath == "" {
 		// dry mode
 		raw, _ := json.Marshal(map[string]any{
-			"agent": host, "rule": "synthetic", "note": "dry-run event",
+			"Image":       "/usr/bin/id",
+			"ParentImage": "/bin/bash",
+			"CommandLine": "id",
+			"User":        "root",
+			"note":        "dry-run event (matches proc_creation_susp_shell)",
 		})
 		return []model.Event{{ID: "dry-0001", Timestamp: time.Now().UTC(), Raw: raw}}, nil
 	}
