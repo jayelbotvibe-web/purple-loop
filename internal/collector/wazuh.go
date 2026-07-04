@@ -81,7 +81,7 @@ func (c *WazuhCollector) readAlerts(ctx context.Context, host string) ([]string,
 		return readAlertsFile(c.alertsPath, host)
 	}
 	cmd := exec.CommandContext(ctx, "docker", "exec", c.ManagerContainer,
-		"grep", host, "/var/ossec/logs/alerts/alerts.json")
+		"grep", host, "/var/ossec/logs/archives/archives.json")
 	out, err := cmd.Output()
 	if err != nil {
 		// grep returns 1 on no matches — that's not an error for us
