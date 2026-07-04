@@ -17,3 +17,7 @@ One line per closed issue: date · issue · what shipped · verification · comm
 - 2026-07-04 · #12 · HTML coverage report + NavigatorLayerReporter, --output flag (html/json) · 22da6fc
 - 2026-07-04 · #13 · ATT&CK Navigator layer JSON exports 10 techniques colored by verdict · 9a0baad
 - 2026-07-04 · #14 · 9 additional Sigma rules + full mapping, 10-technique campaign runs end-to-end · 71e773e
+- 2026-07-04 · #15 · Sigma lint CI + fixture existence check, catches broken rules · a25a92f
+- 2026-07-04 · #16 · Fixture regression test in CI, validates all JSONL fixtures · 4e7d759
+- 2026-07-04 · #17 · BLOCKED — Windows victim VM needs ISO/license (needs-human) · —
+- 2026-07-04 · #18 · BLOCKED — Windows Executor depends on #17 (needs-human) · —
