@@ -10,3 +10,5 @@ One line per closed issue: date · issue · what shipped · verification · comm
 - 2026-07-04 · #5 · model test: ProofChain JSON shape verified against DESIGN.md §4 · go test PASS · 088d30d
 - 2026-07-04 · #6 · WazuhCollector: docker exec on alerts.json, fixture test (3 events parsed), dry mode preserved · b8d59f3
 - 2026-07-04 · #7 · DockerExecutor via docker exec + cleanup support, AtomicTest.CleanupCommand field added · 40f20b1
+- 2026-07-04 · #8 · Evaluator: presence-based, fixture tests (positive→DETECTED, empty→MISSED), negative logged · 81601ad
+- 2026-07-04 · #9 · CLI wired: --victim-container + --manager-container, live run produces ProofChain (MISSED on benign cmd) · 6f6a173
