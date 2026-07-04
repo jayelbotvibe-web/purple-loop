@@ -1,0 +1,41 @@
+# APT29-inspired emulation plan. Multi-stage actor emulation covering
+# initial access, discovery, persistence, and collection.
+name: apt29-subset
+description: APT29-inspired emulation — initial access, discovery, persistence, collection
+stages:
+  - name: initial-access
+    description: Gain initial foothold via command execution and external services
+    techniques:
+      - technique_id: T1059.004
+        atomic_ids: [T1059.004-1]
+      - technique_id: T1133
+        atomic_ids: [T1133-1]
+  - name: discovery
+    description: Enumerate users, systems, and network
+    techniques:
+      - technique_id: T1033
+        atomic_ids: [T1033-1]
+      - technique_id: T1087.001
+        atomic_ids: [T1087.001-1]
+      - technique_id: T1082
+        atomic_ids: [T1082-1]
+      - technique_id: T1016
+        atomic_ids: [T1016-1]
+      - technique_id: T1049
+        atomic_ids: [T1049-1]
+  - name: persistence
+    description: Establish persistence via boot/logon autostart and account manipulation
+    techniques:
+      - technique_id: T1547.001
+        atomic_ids: [T1547.001-1]
+      - technique_id: T1069.001
+        atomic_ids: [T1069.001-1]
+  - name: collection
+    description: Collect data from local system and network shares
+    techniques:
+      - technique_id: T1007
+        atomic_ids: [T1007-1]
+      - technique_id: T1518
+        atomic_ids: [T1518-1]
+      - technique_id: T1135
+        atomic_ids: [T1135-1]
