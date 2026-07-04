@@ -215,7 +215,10 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	// ponytail: cleanup is best-effort per atomic after run
 	_ = exec.Cleanup(ctx, atomic, target)
 
-	events, err := coll.Query(ctx, run.Window(5*time.Second), target.Host)
+	// ponytail: let Wazuh ingest telemetry before querying
+	time.Sleep(10 * time.Second)
+
+	events, err := coll.Query(ctx, run.Window(10*time.Minute), target.Host)
 	if err != nil {
 		return model.ProofChain{}, fmt.Errorf("collect: %w", err)
 	}
