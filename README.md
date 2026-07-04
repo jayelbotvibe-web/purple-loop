@@ -35,6 +35,24 @@ threat-intel-arbiter ──→ priority-ordered plan ──→ Execute ──→
 4. **Evaluate** normalizes events and matches them against Sigma rules using a native Go parser
 5. **Report** produces JSON, HTML coverage grid, or ATT&CK Navigator layer export
 
+## Pipeline canary (positive control)
+
+Before any real techniques run, Purple Loop fires a **pipeline canary** — a known-benign command
+engineered to be trivially detectable. It proves the full pipeline (execute → telemetry → collect →
+normalize → match) is healthy, *per platform*, before trusting any campaign result.
+
+```bash
+make canary
+# Canary marker: purpleloop-canary-a1b2c3d4
+# Canary: DETECTED on windows (evidence: 4 events)
+```
+
+**Behavioral contract:**
+- **Canary DETECTED** → pipeline is healthy; every `MISSED` in that run is a genuine detection gap
+- **Canary NOT detected** → run is `INCONCLUSIVE`; coverage is not reported; pipeline is broken
+
+This removes the ambiguity that caused v1.0's false 100% coverage — you can now trust your gaps.
+
 ## Results  *(v1.2 — real Sigma matching, not presence-based)*
 
 - **Windows:** canary `DETECTED` — Sysmon Event ID 1 flowing, pipeline healthy
