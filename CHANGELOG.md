@@ -1,6 +1,25 @@
 # Changelog
 All notable changes to this project follow Keep a Changelog and Semantic Versioning.
 
+## [1.2.0] — 2026-07-04
+### Added
+- Pipeline canary (positive control): per-run marker, gating logic, `make canary`
+- Windows Sysmon Event ID 1 telemetry via Wazuh agent channel forwarding
+- Windows Sigma rule (`win_proc_create.yml`) with positive/negative fixtures
+- GitHub Pages architecture plan (`docs/index.html`)
+- SECURITY.md, CONTRIBUTING.md, RESULTS.md
+- Repo About metadata: 15 topics, description, homepage
+
+### Changed
+- Normalizer handles `data.win.eventdata` fields (image, commandLine, parentImage, user)
+- `make verify` now includes pipeline canary gate
+- README overhaul: badges, architecture, canary section, honest results
+- Release notes rewritten for v1.0.0 and v1.1.0
+
+### Fixed
+- v1.1 0/10 coverage: Linux lacked process-creation telemetry; Windows now DETECTED
+- Canary removes ambiguity between "pipeline broken" and "genuine detection gap"
+
 ## [1.1.0] — 2026-07-04
 ### Added
 - Real Sigma rule parser + native Go matcher (field modifiers, condition grammar)
