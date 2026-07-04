@@ -1,0 +1,23 @@
+title: Discovery - T1087.001
+id: 06a5d919-0000-0000-0000-000000000000
+status: experimental
+description: Detects T1087.001 discovery activity.
+references:
+  - https://attack.mitre.org/techniques/T1087/001/
+author: purple-loop
+date: 2026/07/04
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection:
+    Image|endswith:
+      - '/id'
+      - '/whoami'
+  condition: selection
+falsepositives:
+  - Legitimate administrative scripts
+level: low
+tags:
+  - attack.discovery
+  - attack.T1087001
