@@ -1,182 +1,152 @@
 {
   "alerts": [
     {
-      "id": "c082e856e8bab927",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-35464 \u2014 ForgeRock Access Management (AM) Core Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 CyberArk Privileged Access is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "b512d702d02aa7ff",
+      "action": "Track",
+      "severity": "medium",
+      "explanation": "MEDIUM (confidence: HIGH)\n\nCVE-2021-28663 \u2014 Arm Mali Graphics Processing Unit (GPU) Use-After-Free Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: ",
       "matched_apps": [
-        "Windows Server",
-        "Apache HTTP Server",
-        "CyberArk Privileged Access"
+        "Mentor Graphics Calibre"
       ],
       "cves": [
-        "CVE-2021-35464"
+        "CVE-2021-28663"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "565e119514d29a26",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2015-4852 \u2014 Oracle WebLogic Server Deserialization of Untrusted Data Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "5b4e9c3f2cf33da7",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2020-3452 \u2014 Cisco ASA and FTD Read-Only Path Traversal Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 1/5\n\nExposure: 2",
       "matched_apps": [
-        "Windows Server",
-        "Oracle Database",
-        "Apache HTTP Server"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2015-4852"
+        "CVE-2020-3452"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "9a79e59e990263c3",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-14750 \u2014 Oracle WebLogic Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "2fb05d7630ef0e3b",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2020-3580 \u2014 Cisco ASA and FTD Cross-Site Scripting (XSS) Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 1/5\n\nExposure:",
       "matched_apps": [
-        "Windows Server",
-        "Oracle Database",
-        "Apache HTTP Server"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2020-14750"
+        "CVE-2020-3580"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "3c28d8de9a9c2bd3",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-14882 \u2014 Oracle WebLogic Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "626f261127ddce7e",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2021-1497 \u2014 Cisco HyperFlex HX Installer Virtual Machine Command Injection Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpa",
       "matched_apps": [
-        "Windows Server",
-        "Oracle Database",
-        "Apache HTTP Server"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2020-14882"
+        "CVE-2021-1497"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "5d1ec4eae65b796e",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-14883 \u2014 Oracle WebLogic Server Unspecified Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 Oracle Database is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "e82f08cfeeb22986",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2021-1498 \u2014 Cisco HyperFlex HX Data Platform Command Injection Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 1/5\n\nExp",
       "matched_apps": [
-        "Windows Server",
-        "Oracle Database",
-        "Apache HTTP Server"
+        "Cisco IOS XE",
+        "Ansible Automation Platform"
       ],
       "cves": [
-        "CVE-2020-14883"
+        "CVE-2021-1498"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "ca5b706b2307f744",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-22005 \u2014 VMware vCenter Server File Upload Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "acd59cbd11eaa0b9",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2018-0171 \u2014 Cisco IOS and IOS XE Software Smart Install Remote Code Execution Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nI",
       "matched_apps": [
-        "Windows Server",
-        "VMware vSphere",
-        "Apache HTTP Server"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2021-22005"
+        "CVE-2018-0171"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "23b8f6a4e76b716b",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2020-3952 \u2014 VMware vCenter Server Information Disclosure Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "6c3f22825edbb142",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2020-3118 \u2014 Cisco IOS XR Software Discovery Protocol Format String Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 1/5\n",
       "matched_apps": [
-        "Windows Server",
-        "VMware vSphere",
-        "Apache HTTP Server"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2020-3952"
+        "CVE-2020-3118"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "984d193c960a9ec2",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-21972 \u2014 VMware vCenter Server Remote Code Execution Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "1a41c01bfc8f021e",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2020-3566 \u2014 Cisco IOS XR Software DVMRP Memory Exhaustion Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 1/5\n\nExposure",
       "matched_apps": [
-        "Windows Server",
-        "VMware vSphere",
-        "Apache HTTP Server"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2021-21972"
+        "CVE-2020-3566"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "a7397c50393fc48a",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-21985 \u2014 VMware vCenter Server Improper Input Validation Vulnerability\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "48c166ab35a8e8ed",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2020-3569 \u2014 Cisco IOS XR Software DVMRP Memory Exhaustion Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 1/5\n\nExposure",
       "matched_apps": [
-        "Windows Server",
-        "VMware vSphere",
-        "Apache HTTP Server"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2021-21985"
+        "CVE-2020-3569"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]
     },
     {
-      "id": "98d84841b10c90ee",
-      "severity": "high",
-      "action": "Schedule",
-      "explanation": "HIGH (confidence: HIGH)\n\nCVE-2021-22017 \u2014 VMware vCenter Server Improper Access Control\n\nLikelihood: 4/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n\nImpact: 3/5\n  \u2022 VMware vSphere is critical infrastructure (+2)\n  \u2022 CyberArk Privileged Access is critical infrastructure (+2)\n\nExposure: 2/3\n  \u2022 Apache HTTP Server is internet-facing (+2)\n\nConfidence: 4/4 (HIGH)\n  \u2022 Source: cisa-kev (high confidence)\n  \u2022 Default baseline (+1)\n\nAction: Schedule\nScore: (4 \u00d7 3 \u00d7 2) / (5 \u00d7 5 \u00d7 3) = 0.32 \u2192 HIGH",
+      "id": "ebf70def8e61c6d2",
+      "action": "Attend",
+      "severity": "low",
+      "explanation": "LOW (confidence: HIGH)\n\nCVE-2019-1653 \u2014 Cisco Small Business RV320 and RV325 Routers Information Disclosure Vulnerability\n\nLikelihood: 3/5\n  \u2022 Active exploitation tag (+3)\n  \u2022 Recent publication (+1)\n",
       "matched_apps": [
-        "Windows Server",
-        "VMware vSphere",
-        "Apache HTTP Server",
-        "CyberArk Privileged Access"
+        "Cisco IOS XE"
       ],
       "cves": [
-        "CVE-2021-22017"
+        "CVE-2019-1653"
       ],
-      "iocs": [],
       "techniques": [
         "T1059"
       ]

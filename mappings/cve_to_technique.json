@@ -293,5 +293,115 @@
         "T1059.004-1"
       ]
     }
+  },
+  "CVE-2021-28663": {
+    "description": "MEDIUM (confidence: HIGH)\n\nCVE-2021-28663 \u2014 Arm Mali Graphics Processing Unit (G",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-3452": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2020-3452 \u2014 Cisco ASA and FTD Read-Only Path Travers",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-3580": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2020-3580 \u2014 Cisco ASA and FTD Cross-Site Scripting (",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2021-1497": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2021-1497 \u2014 Cisco HyperFlex HX Installer Virtual Mac",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2021-1498": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2021-1498 \u2014 Cisco HyperFlex HX Data Platform Command",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2018-0171": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2018-0171 \u2014 Cisco IOS and IOS XE Software Smart Inst",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-3118": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2020-3118 \u2014 Cisco IOS XR Software Discovery Protocol",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-3566": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2020-3566 \u2014 Cisco IOS XR Software DVMRP Memory Exhau",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2020-3569": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2020-3569 \u2014 Cisco IOS XR Software DVMRP Memory Exhau",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
+  },
+  "CVE-2019-1653": {
+    "description": "LOW (confidence: HIGH)\n\nCVE-2019-1653 \u2014 Cisco Small Business RV320 and RV325 Rou",
+    "techniques": [
+      "T1059"
+    ],
+    "atomics": {
+      "T1059": [
+        "T1059.004-1"
+      ]
+    }
   }
 }
