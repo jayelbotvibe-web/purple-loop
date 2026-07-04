@@ -12,3 +12,8 @@ One line per closed issue: date · issue · what shipped · verification · comm
 - 2026-07-04 · #7 · DockerExecutor via docker exec + cleanup support, AtomicTest.CleanupCommand field added · 40f20b1
 - 2026-07-04 · #8 · Evaluator: presence-based, fixture tests (positive→DETECTED, empty→MISSED), negative logged · 81601ad
 - 2026-07-04 · #9 · CLI wired: --victim-container + --manager-container, live run produces ProofChain (MISSED on benign cmd) · 6f6a173
+- 2026-07-04 · #10 · StaticFeed loads 10-technique YAML plan via yaml.v3, priority-ordered · f850ba8
+- 2026-07-04 · #11 · Campaign orchestrator: --plan flag, loops over feed tasks, aggregates verdicts · bdb6640
+- 2026-07-04 · #12 · HTML coverage report + NavigatorLayerReporter, --output flag (html/json) · 22da6fc
+- 2026-07-04 · #13 · ATT&CK Navigator layer JSON exports 10 techniques colored by verdict · 9a0baad
+- 2026-07-04 · #14 · 9 additional Sigma rules + full mapping, 10-technique campaign runs end-to-end · 71e773e

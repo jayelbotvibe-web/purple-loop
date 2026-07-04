@@ -1,7 +1,43 @@
 {
-  "_note": "Seed mapping technique -> atomic test ids -> detection rules. Extend as techniques are added. Bootstraps from AttackRuleMap; Phase 4 adds CVE->technique resolution.",
+  "_note": "Seed mapping technique -> atomic test ids -> detection rules. Phase 4 adds CVE->technique resolution.",
   "T1059.004": {
     "atomics": ["T1059.004-1"],
     "rules": ["detections/linux/proc_creation_susp_shell.yml"]
+  },
+  "T1087.001": {
+    "atomics": ["T1087.001-1"],
+    "rules": ["detections/linux/T1087.001.yml"]
+  },
+  "T1082": {
+    "atomics": ["T1082-1"],
+    "rules": ["detections/linux/T1082.yml"]
+  },
+  "T1033": {
+    "atomics": ["T1033-1"],
+    "rules": ["detections/linux/T1033.yml"]
+  },
+  "T1007": {
+    "atomics": ["T1007-1"],
+    "rules": ["detections/linux/T1007.yml"]
+  },
+  "T1016": {
+    "atomics": ["T1016-1"],
+    "rules": ["detections/linux/T1016.yml"]
+  },
+  "T1049": {
+    "atomics": ["T1049-1"],
+    "rules": ["detections/linux/T1049.yml"]
+  },
+  "T1069.001": {
+    "atomics": ["T1069.001-1"],
+    "rules": ["detections/linux/T1069.001.yml"]
+  },
+  "T1135": {
+    "atomics": ["T1135-1"],
+    "rules": ["detections/linux/T1135.yml"]
+  },
+  "T1518": {
+    "atomics": ["T1518-1"],
+    "rules": ["detections/linux/T1518.yml"]
   }
 }
