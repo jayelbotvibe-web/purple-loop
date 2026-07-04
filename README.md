@@ -72,9 +72,13 @@ This removes the ambiguity that caused v1.0's false 100% coverage — you can no
 ## Quickstart
 
 ```bash
-# One-time setup
 git clone https://github.com/jayelbotvibe-web/purple-loop.git && cd purple-loop
-make host-prep && make lab-fetch && make lab-up && make verify
+bash scripts/startup.sh
+```
+
+Full guide: [STARTUP.md](STARTUP.md) — covers lab, Windows VM, arbiter connection, campaigns, troubleshooting.
+
+```bash
 
 # Run the pipeline canary (proves telemetry → detect works)
 make canary
