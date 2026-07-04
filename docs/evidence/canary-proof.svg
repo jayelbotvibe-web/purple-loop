@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" font-family="monospace" font-size="13">
+  <rect width="800" height="320" fill="#0d1117"/>
+  <text x="20" y="30" fill="#58a6ff" font-size="16" font-weight="bold">Pipeline Canary — Positive Control (Live Run)</text>
+  <text x="20" y="55" fill="#8b949e">make canary</text>
+  <rect x="15" y="65" width="770" height="65" rx="6" fill="#161b22" stroke="#30363d"/>
+  <text x="30" y="90" fill="#3fb950">Canary marker: purpleloop-canary-b1879f19</text>
+  <text x="30" y="110" fill="#3fb950">Canary: DETECTED on windows (evidence: 4 events)</text>
+  <text x="30" y="150" fill="#58a6ff" font-size="16" font-weight="bold">Negative Test — Canary Fails When Pipeline Broken</text>
+  <text x="30" y="175" fill="#8b949e">After stopping WazuhSvc on Windows:</text>
+  <rect x="15" y="185" width="370" height="45" rx="6" fill="#161b22" stroke="#f85149"/>
+  <text x="30" y="205" fill="#f85149">Canary marker: purpleloop-canary-cb83541e</text>
+  <text x="30" y="222" fill="#f85149">(times out — pipeline broken, exit=1)</text>
+  <rect x="420" y="185" width="365" height="45" rx="6" fill="#161b22" stroke="#3fb950"/>
+  <text x="435" y="205" fill="#3fb950">After restarting WazuhSvc:</text>
+  <text x="435" y="222" fill="#3fb950">Canary: DETECTED on windows ✓</text>
+  <text x="20" y="265" fill="#58a6ff" font-size="16" font-weight="bold">Detection Pipeline Proof</text>
+  <rect x="15" y="275" width="770" height="35" rx="6" fill="#161b22" stroke="#30363d"/>
+  <text x="30" y="298" fill="#c9d1d9">{"technique_id":"T1059.004","verdict":"DETECTED","rule_matched":"detections/windows/win_proc_create.yml","events_collected":73}</text>
+</svg>
