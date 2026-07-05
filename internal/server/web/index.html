@@ -243,7 +243,7 @@ function render(app, d){
 
 function open(id, T){
   const t = T.find(x=>x.id===id); if(!t) return;
-  // ponytail: inline simple drawer
+  // inline simple drawer
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(6,8,16,.7);z-index:50';
   overlay.onclick = ()=>overlay.remove();
