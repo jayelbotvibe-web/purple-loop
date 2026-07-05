@@ -22,12 +22,7 @@ rules, and produces an evidence-backed coverage report. No guessing, no presence
 
 ## How it works
 
-```
-threat-intel-arbiter ──→ priority-ordered plan ──→ Execute ──→ Collect ──→ Evaluate ──→ Report
-                              ↑                        │           │          │            │
-                         CVE → technique           Docker/SSH   Wazuh     Sigma rule    HTML
-                         → atomic ID               Linux/Win    archives  native match  + JSON
-```
+![Pipeline diagram](docs/evidence/pipeline-diagram.png)
 
 1. **Feed** loads techniques from a plan, arbiter export, or emulation script
 2. **Execute** runs Atomic Red Team tests on lab victims (Docker Linux + VMware Windows)
