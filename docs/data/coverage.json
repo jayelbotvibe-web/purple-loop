@@ -1,0 +1,59 @@
+{
+  "build": "v1.3.0",
+  "campaign": "discovery",
+  "canary": {
+    "healthy": true,
+    "platforms": [
+      {
+        "healthy": true,
+        "name": "linux"
+      },
+      {
+        "healthy": true,
+        "name": "windows"
+      }
+    ]
+  },
+  "generated_at": "2026-07-05T03:23:36Z",
+  "readiness": {
+    "covered": 1,
+    "gaps": 0,
+    "source": "threat-intel-arbiter",
+    "total": 1
+  },
+  "summary": {
+    "coverage_pct": 100,
+    "detected": 1,
+    "inconclusive": 0,
+    "missed": 0,
+    "no_telemetry": 0,
+    "partial": 0,
+    "total": 1
+  },
+  "tactics": [
+    "Execution",
+    "Persistence",
+    "Privilege Escalation",
+    "Defense Evasion",
+    "Credential Access",
+    "Discovery",
+    "Command \u0026 Control"
+  ],
+  "techniques": [
+    {
+      "arbiter_priority": 0,
+      "atomic": "T1059.004-1",
+      "command": "id; whoami",
+      "events_collected": 1,
+      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
+      "gap": null,
+      "id": "T1059.004",
+      "name": "Unix Shell",
+      "rule_matched": "detections/linux/proc_creation_susp_shell.yml",
+      "source_cve": "",
+      "tactic": "Execution",
+      "verdict": "DETECTED"
+    }
+  ],
+  "untested": {}
+}
