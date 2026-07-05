@@ -69,6 +69,10 @@ This removes the ambiguity that caused v1.0's false 100% coverage — you can no
 }
 ```
 
+Run: `purpleloop serve` for a **local web dashboard** with all past runs at `http://127.0.0.1:8787`.
+
+[Live dashboard on GitHub Pages](https://jayelbotvibe-web.github.io/purple-loop/).
+
 ## Quickstart
 
 ```bash
