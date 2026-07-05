@@ -14,10 +14,10 @@
 ## Why this exists
 
 Red teams find gaps. Blue teams write detections. But few tools *prove* a Sigma rule actually fires
-for the threats being exploited right now — the CISA KEV list, the CVEs making headlines. Purple
-Loop closes that loop: given a prioritized list of threats (from the
-[threat-intel-arbiter](https://github.com/jayelbotvibe-web/threat-intel-arbiter)), it emulates the
-corresponding ATT&CK techniques in an isolated lab, collects real telemetry, evaluates the Sigma
+for the techniques being exploited right now — the CISA KEV list, the CVEs making headlines. Purple
+Loop closes that loop: given a prioritized list of ATT&CK techniques (from the
+[threat-intel-arbiter](https://github.com/jayelbotvibe-web/threat-intel-arbiter)), it emulates
+them in an isolated lab, collects real telemetry, evaluates the Sigma
 rules, and produces an evidence-backed coverage report. No guessing, no presence-based fake numbers.
 
 ## How it works
@@ -99,10 +99,24 @@ go run ./cmd/purpleloop run --emulation emulation/apt29-subset.yml
 ## The two-repo pipeline
 
 Purple Loop pairs with **[threat-intel-arbiter](https://github.com/jayelbotvibe-web/threat-intel-arbiter)**:
-the arbiter ingests MISP/KEV feeds, scores threats with SSVC, and exports a priority-ordered plan.
-Purple Loop executes that plan and proves whether each threat is caught.
+the arbiter ingests MISP/KEV feeds, scores threats with SSVC, maps them to ATT&CK techniques,
+and exports a priority-ordered plan. Purple Loop executes that plan — emulating each technique in
+the lab and validating whether the corresponding behavioral (TTP) detection fires. Indicator-level
+(IOC) matching is out of scope; the arbiter passes techniques, not hashes or IPs.
 
 [`threat-intel-arbiter → arbiter-live.json → purple-loop run --arbiter`]
+
+## Design decisions / scope
+
+**Behavioral (TTP) validation, by design.** Purple Loop validates ATT&CK technique
+detections, not individual indicators. This is intentional: on the Pyramid of Pain,
+hashes and IPs are trivial for an adversary to change, while TTPs are costly — so
+validating technique coverage is the durable, higher-value target. IOC-level validation
+(e.g., network indicators against a lab sinkhole) is a possible future track, but is out
+of scope today; a hash "check" would be a content-coverage lookup, not a real detection test.
+
+CISA KEV and MISP inform which ATT&CK techniques to prioritize; Purple Loop then validates
+the behavioral detections for those techniques — indicator-level (IOC) matching is out of scope.
 
 ## Architecture
 
