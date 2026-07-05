@@ -199,8 +199,8 @@ Flow: arbiter → feed → canary gate → execute → telemetry → Wazuh → c
 const DATA = {
   arbiter:{plane:"Intel plane · external repo",name:"threat-intel-arbiter",tag:"Decides which threats are worth testing.",
     does:"A separate sibling project that prioritizes exploited-in-the-wild vulnerabilities and maps them to ATT&CK techniques. Purple Loop consumes its output as the order to validate detections in.",
-    fn:["Ingests MISP + CISA KEV feeds","Scores and prioritizes CVEs (SSVC-style)","Maps each CVE to ATT&CK technique(s)","Emits a ranked list of techniques"],
-    in:"MISP · CISA KEV",out:"prioritized techniques → Feed",impl:"external Go repo"},
+    fn:["Ingests MISP + CISA KEV feeds","Scores and prioritizes CVEs (SSVC-style)","Maps each CVE to ATT&CK technique(s)","Emits techniques (not IOCs) — hashes, IPs, and domains are out of scope"],
+    in:"MISP · CISA KEV",out:"prioritized ATT&CK techniques → Feed",impl:"external Go repo"},
   feed:{plane:"Engine plane",name:"Priority Feed",tag:"Yields techniques in the order they should be validated.",
     does:"Turns a source of work into an ordered stream of technique tasks. Same interface whether the source is a static plan or the live arbiter — so the loop never changes.",
     fn:["<b>StaticFeed</b> — reads a fixed plan.yml","<b>ArbiterFeed</b> — consumes arbiter output, sorts by priority","Implements the <code>PriorityFeed</code> interface"],
