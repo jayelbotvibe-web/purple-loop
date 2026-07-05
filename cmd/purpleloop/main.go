@@ -6,6 +6,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
+	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -13,10 +16,11 @@ import (
 		"github.com/jayelbotvibe-web/purple-loop/internal/collector"
 		"github.com/jayelbotvibe-web/purple-loop/internal/canary"
 		"github.com/jayelbotvibe-web/purple-loop/internal/evaluator"
-	"github.com/jayelbotvibe-web/purple-loop/internal/executor"
-	"github.com/jayelbotvibe-web/purple-loop/internal/feed"
-	"github.com/jayelbotvibe-web/purple-loop/internal/model"
-	"github.com/jayelbotvibe-web/purple-loop/internal/report"
+		"github.com/jayelbotvibe-web/purple-loop/internal/executor"
+		"github.com/jayelbotvibe-web/purple-loop/internal/feed"
+		"github.com/jayelbotvibe-web/purple-loop/internal/model"
+		"github.com/jayelbotvibe-web/purple-loop/internal/report"
+		"github.com/jayelbotvibe-web/purple-loop/internal/server"
 )
 
 // techniqueRuleMap maps technique IDs to their Sigma rule files.
@@ -43,6 +47,11 @@ func main() {
 
 	if os.Args[1] == "canary" {
 		runCanaryCmd()
+		return
+	}
+
+	if os.Args[1] == "serve" {
+		runServe()
 		return
 	}
 
@@ -283,6 +292,7 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	}, nil
 }
 
+
 func runCanaryCmd() {
 	marker := canary.NewMarker()
 	ctx := context.Background()
@@ -301,4 +311,36 @@ func runCanaryCmd() {
 		}
 		os.Exit(1)
 	}
+}
+
+func runServe() {
+	addr := flag.NewFlagSet("serve", flag.ExitOnError)
+	host := addr.String("addr", "127.0.0.1:8787", "listen address")
+	reports := addr.String("reports", "reports", "reports directory")
+	allowRemote := addr.Bool("allow-remote", false, "allow non-loopback binding")
+	addr.Parse(os.Args[2:])
+
+	if !isLoopback(*host) && !*allowRemote {
+		fmt.Fprintf(os.Stderr, "refusing to bind %s — not loopback. Use --allow-remote to override.\n", *host)
+		os.Exit(1)
+	}
+
+	handler := server.New(*reports)
+	srv := &http.Server{
+		Addr:              *host,
+		Handler:           handler,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	fmt.Printf("Purple Loop dashboard: http://%s\n", *host)
+	log.Fatal(srv.ListenAndServe())
+}
+
+func isLoopback(addr string) bool {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		host = addr
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
