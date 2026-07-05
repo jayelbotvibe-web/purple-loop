@@ -194,6 +194,6 @@ Multi-stage actor emulation plans. Polished v1.0 with full README, diagram, samp
 
 > "The arbiter tells me which CVEs are exploited in the wild and maps them to ATT&CK techniques. Purple Loop then emulates exactly those techniques and proves whether my detections catch them — so my detection engineering effort goes to the threats actually being weaponised, in priority order, with evidence."
 
-- **Arbiter** — Decides what matters. CVE prioritisation from MISP + CISA KEV, mapped to ATT&CK.
-- **Purple Loop** — Proves you can catch it. Emulates the technique, validates the detection, attaches evidence.
-- **Together** — Risk-driven detection assurance. A full pipeline no single portfolio repo shows.
+- **Arbiter** — Decides what matters. CVE prioritisation from MISP + CISA KEV, mapped to ATT&CK techniques.
+- **Purple Loop** — Proves you can catch it. Emulates the technique, validates the behavioral detection, attaches evidence. Does not validate IOCs — the arbiter passes techniques, not indicators.
+- **Together** — Risk-driven behavioral detection assurance. A full pipeline no single portfolio repo shows.
