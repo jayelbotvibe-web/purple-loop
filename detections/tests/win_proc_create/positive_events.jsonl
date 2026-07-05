@@ -1,1 +1,1 @@
-{"Image":"C:\Windows\SysWOW64\net.exe","CommandLine":"net.exe accounts","ParentImage":"C:\Program Files (x86)\ossec-agent\wazuh-agent.exe","User":"NT AUTHORITY\SYSTEM"}
+{"Image":"C:\\Windows\\SysWOW64\\net.exe","CommandLine":"net.exe accounts","ParentImage":"C:\\Program Files (x86)\\ossec-agent\\wazuh-agent.exe","User":"NT AUTHORITY\\SYSTEM"}
