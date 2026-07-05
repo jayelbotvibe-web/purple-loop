@@ -55,6 +55,8 @@ This removes the ambiguity that caused v1.0's false 100% coverage — you can no
 
 ## Results  *(v1.2 — real Sigma matching, not presence-based)*
 
+![Sample coverage result](docs/evidence/sample-result.png)
+
 - **Windows:** canary `DETECTED` — Sysmon Event ID 1 flowing, pipeline healthy
 - **Linux:** `NO_TELEMETRY` — Sysmon-for-Linux pending (auditd events lack process-creation fields)
 - **Coverage:** honest, non-zero. Windows detection confirmed; Linux gap documented
