@@ -111,6 +111,9 @@ func newReporter(output string) model.Reporter {
 	if strings.HasSuffix(output, ".json") {
 		return report.NavigatorLayerReporter{Path: output}
 	}
+	if strings.Contains(output, "reports") || strings.HasSuffix(output, "coverage") {
+		return report.DashboardReporter{Dir: output}
+	}
 	return report.JSONReporter{Out: os.Stdout}
 }
 
