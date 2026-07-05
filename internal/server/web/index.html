@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Purple Loop — Coverage Command Center</title>
+<style>
+  :root{
+    --bg:#0A0D18; --bg-2:#0E1220; --panel:#141A2E; --panel-2:#1A2138;
+    --border:#262E48; --border-bright:#37416A;
+    --text:#E7EAF4; --dim:#949BB8; --faint:#626A88;
+    --violet:#8B7CFF; --violet-br:#A594FF; --violet-deep:#5A48C7;
+    --red:#FF5D73; --blue:#45B9F0;
+    --detected:#40D6A3; --partial:#F5B33F; --missed:#FF5D73; --notelem:#5B6688; --inconc:#8AA0D6;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'IBM Plex Sans',system-ui,sans-serif;
+    --disp:'Space Grotesk',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(1100px 560px at 84% -14%,rgba(139,124,255,.09),transparent 60%),
+                     radial-gradient(800px 460px at 2% 2%,rgba(69,185,240,.055),transparent 55%);
+    background-attachment:fixed}
+  .dash{max-width:1260px;margin:0 auto;padding:22px 28px 60px}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--disp);font-weight:600;font-size:19px}
+  .brand .dot{width:26px;height:26px;border-radius:7px;position:relative;
+    background:conic-gradient(from 210deg,var(--red),var(--violet),var(--blue),var(--violet),var(--red));box-shadow:0 0 18px rgba(139,124,255,.55)}
+  .brand .dot::after{content:"";position:absolute;inset:5px;border-radius:4px;background:var(--bg)}
+  .runinfo{display:flex;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+  .runinfo .r{border:1px solid var(--border);border-radius:7px;padding:6px 11px;background:var(--panel)}
+  .runinfo .r b{color:var(--violet-br);font-weight:500}
+  .canary{display:flex;align-items:center;gap:16px;border-radius:14px;padding:15px 20px;margin-bottom:20px;flex-wrap:wrap;
+    background:linear-gradient(100deg,rgba(64,214,163,.12),rgba(139,124,255,.06));border:1px solid rgba(64,214,163,.35)}
+  .canary.fail{background:linear-gradient(100deg,rgba(255,93,115,.12),rgba(255,93,115,.04));border-color:rgba(255,93,115,.35)}
+  .canary .ic{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:18px;flex:0 0 auto}
+  .canary .ic.ok{background:rgba(64,214,163,.16);color:var(--detected)}
+  .canary .ic.fail{background:rgba(255,93,115,.16);color:var(--missed)}
+  .canary .txt{flex:1;min-width:220px}
+  .canary .txt .t{font-family:var(--disp);font-weight:600;font-size:15px}
+  .canary .txt .s{font-size:13px;color:var(--dim)}
+  .plat{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:100px;border:1px solid rgba(64,214,163,.4);color:var(--detected);display:flex;align-items:center;gap:6px}
+  .plat i{width:6px;height:6px;border-radius:50%;box-shadow:0 0 7px}
+  .plat.fail{border-color:rgba(255,93,115,.4);color:var(--missed)}
+  .plat.fail i{background:var(--missed)}
+  h2.sec{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 12px}
+  .hero{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;margin-bottom:20px}
+  @media(max-width:840px){.hero{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px}
+  .cov{display:flex;align-items:center;gap:24px}
+  .ring{flex:0 0 auto;position:relative;width:150px;height:150px}
+  .ring .ctr{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  .ring .ctr .big{font-family:var(--disp);font-weight:700;font-size:38px;line-height:1}
+  .ring .ctr .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+  .cov .side{flex:1}
+  .cov .side .h{font-family:var(--disp);font-weight:600;font-size:16px;margin-bottom:3px}
+  .cov .side .sub{color:var(--dim);font-size:13px;margin-bottom:14px}
+  .vrow{display:flex;flex-direction:column;gap:8px}
+  .vitem{display:flex;align-items:center;gap:10px;font-size:13.5px}
+  .vitem .sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+  .vitem .nm{color:var(--dim);flex:1}
+  .vitem .ct{font-family:var(--mono);color:var(--text);font-weight:500}
+  .main{display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+  @media(max-width:900px){.main{grid-template-columns:1fr}}
+  .matrix{display:grid;grid-auto-flow:column;gap:10px;overflow-x:auto;padding-bottom:4px}
+  .tcol{min-width:118px}
+  .tcol .th{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--dim);text-transform:uppercase;padding:0 0 9px;border-bottom:1px solid var(--border);margin-bottom:9px;min-height:30px}
+  .cell{border-radius:8px;padding:9px 10px;margin-bottom:7px;cursor:pointer;border:1px solid transparent;transition:transform .14s,box-shadow .14s;text-align:left;width:100%;font-family:var(--sans);color:#0A0D18}
+  .cell:hover{transform:translateY(-2px);box-shadow:0 10px 24px -12px rgba(0,0,0,.7)}
+  .cell.detected{background:linear-gradient(135deg,var(--detected),#2fae83)}
+  .cell.partial{background:linear-gradient(135deg,var(--partial),#d69426)}
+  .cell.missed{background:linear-gradient(135deg,var(--missed),#d43f56);color:#fff}
+  .cell.no_telemetry,.cell.inconclusive{background:var(--panel-2);color:var(--faint);border:1px dashed var(--border-bright);cursor:default}
+  .cell .id{font-family:var(--mono);font-size:12px;font-weight:600}
+  .cell .nm{font-size:10.5px;opacity:.82;line-height:1.2;margin-top:2px}
+  .gap{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;cursor:pointer;transition:border-color .15s,transform .15s}
+  .gap:hover{border-color:var(--border-bright);transform:translateY(-2px)}
+  .gap .g1{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .gap .gid{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)}
+  .vchip{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid}
+  .vchip.missed{color:var(--missed);border-color:rgba(255,93,115,.4)}
+  .vchip.partial{color:var(--partial);border-color:rgba(245,179,63,.4)}
+  .gap .prio{display:flex;align-items:center;gap:8px;margin:10px 0 8px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .gap .pbar{flex:1;height:6px;border-radius:100px;background:var(--panel);overflow:hidden}
+  .gap .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--partial))}
+  .gap .why{font-size:12.5px;color:var(--dim);line-height:1.45}
+  .gap .why b{color:var(--text)}
+  .empty{text-align:center;padding:60px 20px;color:var(--faint);font-family:var(--disp);font-size:18px}
+  .empty p{color:var(--dim);font-size:14px}
+  footer{max-width:1260px;margin:0 auto;padding:6px 28px 40px;color:var(--faint);font-family:var(--mono);font-size:11px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="dash" id="app"><div class="empty"><p>Loading coverage data…</p></div></div>
+<footer>Purple Loop v1.3.0 — Coverage Command Center · github.com/jayelbotvibe-web/purple-loop</footer>
+
+<script>
+async function load(){
+  const app = document.getElementById('app');
+  try{
+    const r = await fetch('data/coverage.json', {cache:'no-store'});
+    if(!r.ok) return renderEmpty(app, `No run data found (HTTP ${r.status})`);
+    const d = await r.json();
+    if(!d.canary || !d.canary.healthy) return renderInconclusive(app, d);
+    render(app, d);
+  }catch(e){
+    renderEmpty(app, 'No run yet — run make dashboard');
+  }
+}
+
+function renderEmpty(app, msg){
+  app.innerHTML = `<div class="empty"><p>${msg}</p><p style="font-family:monospace;font-size:12px">Run: make dashboard</p></div>`;
+}
+
+function renderInconclusive(app, d){
+  const plat = (d.canary?.platforms||[]).map(p=>p.name).join(', ')||'unknown';
+  app.innerHTML = `
+    <div class="bar"><div class="brand"><span class="dot"></span> Purple Loop · Coverage Command Center</div></div>
+    <div class="canary fail">
+      <div class="ic fail">✕</div>
+      <div class="txt">
+        <div class="t" style="color:var(--missed)">INCONCLUSIVE — pipeline canary failed on ${plat}</div>
+        <div class="s">Telemetry is not delivering. Coverage is NOT reported. Fix the pipeline and re-run.</div>
+      </div>
+    </div>
+    <div class="empty"><p>No coverage data — canary must pass first.</p></div>`;
+}
+
+function render(app, d){
+  const ts = d.techniques||[];
+  const s = d.summary||{};
+
+  // Build verdict class map
+  const T = ts.map(t=>({...t, vclass: t.verdict.toLowerCase()}));
+
+  const tactics = d.tactics||[...new Set(ts.map(t=>t.tactic))];
+  const untested = d.untested||{};
+
+  // Canary banner
+  const platList = (d.canary?.platforms||[]).map(p=>`<span class="plat"><i style="background:var(--detected);box-shadow:0 0 7px var(--detected)"></i>${p.name} · healthy</span>`).join('');
+
+  // Ring chart
+  const pct = s.coverage_pct||0;
+  const total = s.total||0;
+  const ringCirc = 339.3; // 2π*54
+  const dLen = (s.detected/total*ringCirc)||0;
+  const pLen = ((s.partial||0)/total*ringCirc)||0;
+  const mLen = ((s.missed||0)/total*ringCirc)||0;
+
+  app.innerHTML = `
+<div class="dash">
+  <div class="bar">
+    <div class="brand"><span class="dot"></span> Purple Loop · Coverage Command Center</div>
+    <div class="runinfo">
+      <span class="r">Campaign · <b>${d.campaign||'—'}</b></span>
+      <span class="r">Run · <b>${d.generated_at||'—'}</b></span>
+      <span class="r">Build · <b>${d.build||'—'}</b></span>
+    </div>
+  </div>
+
+  <div class="canary" id="canary-banner">
+    <div class="ic ok">✓</div>
+    <div class="txt">
+      <div class="t" style="color:var(--detected)">Pipeline verified — coverage is trustworthy</div>
+      <div class="s">The canary fired end-to-end before scoring. Every MISSED is a genuine gap.</div>
+    </div>
+    <div class="plats">${platList}</div>
+  </div>
+
+  <div class="hero">
+    <div class="card cov">
+      <div class="ring">
+        <svg viewBox="0 0 150 150" width="150" height="150">
+          <circle cx="75" cy="75" r="54" fill="none" stroke="#1A2138" stroke-width="14"/>
+          <g transform="rotate(-90 75 75)" stroke-width="14" fill="none" stroke-linecap="butt">
+            <circle cx="75" cy="75" r="54" stroke="#40D6A3" stroke-dasharray="${dLen} ${ringCirc-dLen}" stroke-dashoffset="0"/>
+            <circle cx="75" cy="75" r="54" stroke="#F5B33F" stroke-dasharray="${pLen} ${ringCirc-pLen}" stroke-dashoffset="${-dLen}"/>
+            <circle cx="75" cy="75" r="54" stroke="#FF5D73" stroke-dasharray="${mLen} ${ringCirc-mLen}" stroke-dashoffset="${-(dLen+pLen)}"/>
+          </g>
+        </svg>
+        <div class="ctr"><div><div class="big">${pct}<span style="font-size:20px">%</span></div><div class="lbl">detected</div></div></div>
+      </div>
+      <div class="side">
+        <div class="h">Detection coverage</div>
+        <div class="sub">${total} techniques validated</div>
+        <div class="vrow">
+          <div class="vitem"><span class="sw" style="background:var(--detected)"></span><span class="nm">Detected</span><span class="ct">${s.detected||0}</span></div>
+          <div class="vitem"><span class="sw" style="background:var(--partial)"></span><span class="nm">Partial</span><span class="ct">${s.partial||0}</span></div>
+          <div class="vitem"><span class="sw" style="background:var(--missed)"></span><span class="nm">Missed <span style="color:var(--faint)">· real gaps</span></span><span class="ct">${s.missed||0}</span></div>
+          <div class="vitem"><span class="sw" style="background:var(--notelem)"></span><span class="nm">No telemetry</span><span class="ct">${s.no_telemetry||0}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card readiness" style="align-self:start">
+      <div class="rt">Threat readiness</div>
+      <div class="rs">vs. threat-intel-arbiter priorities</div>
+      <div class="rbar"><i style="width:${((s.detected/(s.total||1))*100).toFixed(0)}%"></i></div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px">
+        <span>${s.detected||0} / ${s.total||0} covered</span><span style="color:var(--missed)">${(s.total-s.detected)||0} gaps</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="card">
+      <h2 class="sec">ATT&amp;CK coverage matrix · click a technique</h2>
+      <div class="matrix" id="matrix"></div>
+    </div>
+    <div class="card">
+      <h2 class="sec">Prioritized gap backlog</h2>
+      <div id="backlog"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:6px">Sorted by arbiter priority — fix top-down.</div>
+    </div>
+  </div>
+</div>`;
+
+  // Build matrix
+  const mx = document.getElementById('matrix');
+  tactics.forEach(tac=>{
+    const col=document.createElement('div'); col.className='tcol';
+    const th=document.createElement('div'); th.className='th'; th.textContent=tac; col.appendChild(th);
+    T.filter(t=>t.tactic===tac).forEach(t=>{
+      const c=document.createElement('button'); c.className='cell '+t.vclass; c.dataset.id=t.id;
+      c.innerHTML=`<div class="id">${t.id}</div><div class="nm">${t.name||t.id}</div>`;
+      c.addEventListener('click',()=>open(t.id,T));
+      col.appendChild(c);
+    });
+    mx.appendChild(col);
+  });
+
+  // Build gap backlog
+  const bl=document.getElementById('backlog');
+  T.filter(t=>t.vclass!=='detected'&&t.vclass!=='no_telemetry').sort((a,b)=>(b.arbiter_priority||0)-(a.arbiter_priority||0)).forEach(t=>{
+    const g=document.createElement('div'); g.className='gap'; g.dataset.id=t.id;
+    const gap=t.gap||{};
+    g.innerHTML=`<div class="g1"><div><div class="gid">${t.id}</div><div class="gname" style="font-size:12px;color:var(--dim);margin-top:2px">${t.name||''}</div></div>
+      <span class="vchip ${t.vclass}">${t.verdict}</span></div>
+      <div class="prio">priority<div class="pbar"><i style="width:${Math.round((t.arbiter_priority||0)*100)}%"></i></div>${(t.arbiter_priority||0).toFixed(2)}</div>
+      ${gap.why?`<div class="why"><b>Why:</b> ${gap.why}</div>`:''}`;
+    g.addEventListener('click',()=>open(t.id,T)); bl.appendChild(g);
+  });
+}
+
+function open(id, T){
+  const t = T.find(x=>x.id===id); if(!t) return;
+  // ponytail: inline simple drawer
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(6,8,16,.7);z-index:50';
+  overlay.onclick = ()=>overlay.remove();
+  document.body.appendChild(overlay);
+
+  const draw = document.createElement('div');
+  draw.style.cssText = 'position:fixed;top:0;right:0;height:100%;width:420px;max-width:90vw;background:#0E1220;border-left:1px solid #37416A;z-index:51;overflow-y:auto;padding:24px;font-family:IBM Plex Sans,sans-serif';
+  const vc = t.vclass||t.verdict.toLowerCase();
+  const gap = t.gap||{};
+  draw.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button onclick="this.closest('div').parentElement.previousElementSibling.remove();this.closest('div').remove()" style="background:#1A2138;border:1px solid #262E48;color:#949BB8;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:15px">✕</button>
+    </div>
+    <div style="font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#A594FF;margin-bottom:4px">${t.tactic||'—'}</div>
+    <h2 style="font-family:Space Grotesk,sans-serif;font-weight:600;font-size:22px;margin:0 0 4px;color:#E7EAF4">${t.id} · ${t.name||t.id}</h2>
+    <p style="color:#949BB8;font-size:14px;margin:0 0 20px">atomic ${t.atomic||'—'}</p>
+    <span class="vchip ${vc}" style="display:inline-flex">${t.verdict}</span>
+
+    <h3 style="font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#626A88;margin:22px 0 9px">What ran</h3>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><span style="color:#A594FF">Execute:</span> ${t.command||'—'}</div>
+      <div><span style="color:#A594FF">Collect:</span> ${t.events_collected||0} events</div>
+      <div><span style="color:#A594FF">Rule:</span> ${t.rule_matched||'none matched'}</div>
+    </div>
+
+    ${t.evidence?`
+    <h3 style="font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#626A88;margin:22px 0 9px">Evidence</h3>
+    <pre style="background:#080B14;border:1px solid #262E48;border-left:2px solid #40D6A3;border-radius:8px;padding:11px;font-family:monospace;font-size:11.5px;color:#cfd6ee;line-height:1.55;word-break:break-all;margin:0">${t.evidence}</pre>
+    `:''}
+
+    ${gap.why?`
+    <h3 style="font-family:monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#626A88;margin:22px 0 9px">Gap</h3>
+    <div style="background:rgba(139,124,255,.08);border:1px solid #37416A;border-radius:10px;padding:12px;font-size:13px;color:#949BB8">${gap.why}</div>
+    `:''}
+  `;
+  document.body.appendChild(draw);
+}
+
+load();
+</script>
+</body>
+</html>
