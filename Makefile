@@ -51,6 +51,11 @@ snapshot: ## snapshot lab state + Windows VM (save docker images)
 restore: ## restore lab from snapshot (RESTORE_TAG=...)
 	@bash scripts/restore.sh $(RESTORE_TAG)
 
+dashboard: build ## refresh coverage.json and deploy dashboard to docs/
+	@go run ./cmd/purpleloop run --plan plans/discovery.yml --dry-run --output reports
+	@cp reports/coverage.json docs/data/
+	@echo "Dashboard refreshed: docs/index.html + docs/data/coverage.json"
+
 no-boot: ## prevent lab auto-start at boot (stops + disables restart policy)
 	@cd $(LAB_DIR) && docker compose down
 	@echo "Containers stopped. Auto-restart remains on 'always' — run 'lab-up' to start manually."
