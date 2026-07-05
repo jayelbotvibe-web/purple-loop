@@ -27,4 +27,4 @@ One line per closed issue: date · issue · what shipped · verification · comm
 - 2026-07-04 · #22 · Multi-stage emulation format + --emulation runner, 3-stage discovery chain · adccf9a
 - 2026-07-04 · #23 · APT29-inspired 4-stage actor plan, 12 techniques end-to-end · 55fc36f
 - 2026-07-04 · #24 · v1.0 polish: README, CHANGELOG, badges, sample output, phase table · f8e2707
-- 2026-07-04 · FINAL · cross-profile workflow: threat-intel-arbiter agent scored 1147 alerts, arbiter campaign 10/10 DETECTED, Windows SSH+Wazuh confirmed · 0e94d5b
+- 2026-07-04 · FINAL · cross-profile workflow: threat-intel-arbiter scored 1147 alerts, arbiter campaign 10/10 DETECTED, Windows SSH+Wazuh confirmed · 0e94d5b

@@ -1,9 +1,6 @@
 # Purple Loop — Architecture Plan
 
-**Audience:** this document + companion doc `AGENT_PLAYBOOK.md`.
 **Repo:** `github.com/jayelbotvibe-web/purple-loop`
-
-This says **what** we're building. `AGENT_PLAYBOOK.md` says **how** the agent builds it.
 
 ---
 

@@ -4,8 +4,8 @@
 
 ```
 ┌─────────────────────────────────┐
-│ threat-intel-arbiter            │  hermes -z "..." --profile threatlib
-│ (separate repo, Hermes profile) │  ingests CISA KEV + MISP → scores SSVC
+│ threat-intel-arbiter            │  ingests CISA KEV + MISP → scores SSVC
+│ (separate repo)                 │  exports priority-ordered plan
 └──────────────┬──────────────────┘
                │ arbiter-live.json
                ▼
@@ -98,15 +98,10 @@ If re-provisioning the VM:
 
 ## 4. Connecting the Arbiter
 
-The threat-intel-arbiter runs as a separate Hermes profile. To generate a priority-ordered
-export:
+The threat-intel-arbiter is a separate repo. To generate a priority-ordered export:
 
 ```bash
-# Dispatch to the arbiter agent (one-shot)
-hermes -z "Export top 10 alerts from /home/niel/projects/threat-intel-arbiter/data/arbiter.db
-to /home/niel/purple-loop/testdata/arbiter-live.json. Format: {\"alerts\":[{\"id\",\"action\",
-\"severity\",\"matched_apps\",\"cves\",\"techniques\":[\"T1059\"]}]}. Extract CVEs from
-explanation text. Sort by action priority." --profile threatlib
+# Query the arbiter database and export the top 10 alerts
 ```
 
 **What this does:**
@@ -115,7 +110,7 @@ explanation text. Sort by action priority." --profile threatlib
 3. Exports the top 10 as JSON to `testdata/arbiter-live.json`
 4. Purple Loop reads this file via `--arbiter`
 
-**Manual alternative** (if Hermes dispatch is unavailable):
+**Manual alternative:**
 ```bash
 python3 << 'EOF'
 import sqlite3, json, re
