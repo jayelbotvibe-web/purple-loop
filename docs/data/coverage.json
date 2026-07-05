@@ -14,21 +14,21 @@
       }
     ]
   },
-  "generated_at": "2026-07-05T03:28:40Z",
+  "generated_at": "2026-07-05T03:37:30Z",
   "readiness": {
-    "covered": 10,
+    "covered": 1,
     "gaps": 0,
     "source": "threat-intel-arbiter",
-    "total": 10
+    "total": 1
   },
   "summary": {
     "coverage_pct": 100,
-    "detected": 10,
+    "detected": 1,
     "inconclusive": 0,
     "missed": 0,
     "no_telemetry": 0,
     "partial": 0,
-    "total": 10
+    "total": 1
   },
   "tactics": [
     "Execution",
@@ -41,7 +41,7 @@
   ],
   "techniques": [
     {
-      "arbiter_priority": 10,
+      "arbiter_priority": 0,
       "atomic": "T1059.004-1",
       "command": "id; whoami",
       "events_collected": 1,
@@ -52,132 +52,6 @@
       "rule_matched": "detections/linux/proc_creation_susp_shell.yml",
       "source_cve": "",
       "tactic": "Execution",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 9,
-      "atomic": "T1087.001-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1087.001",
-      "name": "Local Account Discovery",
-      "rule_matched": "detections/linux/T1087.001.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 8,
-      "atomic": "T1082-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1082",
-      "name": "System Information Discovery",
-      "rule_matched": "detections/linux/T1082.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 7,
-      "atomic": "T1033-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1033",
-      "name": "System Owner/User Discovery",
-      "rule_matched": "detections/linux/T1033.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 6,
-      "atomic": "T1007-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1007",
-      "name": "System Service Discovery",
-      "rule_matched": "detections/linux/T1007.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 5,
-      "atomic": "T1016-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1016",
-      "name": "Network Configuration Discovery",
-      "rule_matched": "detections/linux/T1016.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 4,
-      "atomic": "T1049-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1049",
-      "name": "Network Connections Discovery",
-      "rule_matched": "detections/linux/T1049.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 3,
-      "atomic": "T1069.001-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1069",
-      "name": "T1069",
-      "rule_matched": "detections/linux/T1069.001.yml",
-      "source_cve": "",
-      "tactic": "Unknown",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 2,
-      "atomic": "T1135-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1135",
-      "name": "Network Share Discovery",
-      "rule_matched": "detections/linux/T1135.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
-      "verdict": "DETECTED"
-    },
-    {
-      "arbiter_priority": 1,
-      "atomic": "T1518-1",
-      "command": "id; whoami",
-      "events_collected": 1,
-      "evidence": "{\"CommandLine\":\"id\",\"Image\":\"/usr/bin/id\",\"ParentImage\":\"/bin/bash\",\"User\":\"root\",\"note\":\"dry-run event (matches proc_creation_susp_shell)\"}",
-      "gap": null,
-      "id": "T1518",
-      "name": "Software Discovery",
-      "rule_matched": "detections/linux/T1518.yml",
-      "source_cve": "",
-      "tactic": "Discovery",
       "verdict": "DETECTED"
     }
   ],

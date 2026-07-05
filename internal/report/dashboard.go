@@ -13,14 +13,64 @@ import (
 // DashboardReporter writes coverage.json for the live dashboard.
 type DashboardReporter struct{ Dir string }
 
-// Write marshals a CampaignResult to <Dir>/coverage.json per the v1.3 data contract.
+// Write marshals a CampaignResult to per-run storage + history index.
+// Also writes docs/data/coverage.json for the static GitHub Pages snapshot.
 func (r DashboardReporter) Write(result model.CampaignResult) error {
 	d := buildCoverage(result)
 	data, err := json.MarshalIndent(d, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(r.Dir, "coverage.json"), data, 0644)
+
+	dir := r.Dir
+	if dir == "" {
+		dir = "reports"
+	}
+
+	// Per-run storage: reports/runs/<runid>/coverage.json
+	runID := fmt.Sprintf("campaign-%s", result.StartedAt.UTC().Format("20060102T150405Z"))
+	runDir := filepath.Join(dir, "runs", runID)
+	if err := os.MkdirAll(runDir, 0755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "coverage.json"), data, 0644); err != nil {
+		return err
+	}
+
+	// History index
+	s := d["summary"].(map[string]any)
+	c := d["canary"].(map[string]any)
+	entry := map[string]any{
+		"id":             runID,
+		"campaign":       d["campaign"],
+		"generated_at":   d["generated_at"],
+		"coverage_pct":   s["coverage_pct"],
+		"canary_healthy": c["healthy"],
+	}
+	if err := appendHistory(dir, entry); err != nil {
+		return err
+	}
+
+	// Static snapshot for GitHub Pages
+	docsDir := "docs/data"
+	os.MkdirAll(docsDir, 0755)
+	return os.WriteFile(filepath.Join(docsDir, "coverage.json"), data, 0644)
+}
+
+func appendHistory(dir string, entry map[string]any) error {
+	path := filepath.Join(dir, "history.json")
+	var history []map[string]any
+
+	if raw, err := os.ReadFile(path); err == nil {
+		json.Unmarshal(raw, &history)
+	}
+	history = append(history, entry)
+
+	data, err := json.MarshalIndent(history, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0644)
 }
 
 func buildCoverage(result model.CampaignResult) map[string]any {
