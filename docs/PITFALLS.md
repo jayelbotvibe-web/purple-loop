@@ -1,6 +1,6 @@
 # Pitfalls & fixes
 
-Check here before spending your 3 debugging attempts (AGENT_PLAYBOOK.md §2).
+Check here before debugging.
 
 ## Wazuh indexer won't start / exits immediately
 - **Cause:** `vm.max_map_count` too low. **Fix:** `scripts/host-prep.sh` (sets it to 262144).

@@ -41,5 +41,5 @@ The canary is the pipeline positive control — it must fire before trusting cam
 
 ## Code style
 
-Ponytail mindset: YAGNI, stdlib-first, delete over add. No unrequested abstractions. Read
-[AGENTS.md](AGENTS.md) for the full ruleset.
+YAGNI, stdlib-first, delete over add. No unrequested abstractions.
+Keep it simple — the best code is the code never written.
