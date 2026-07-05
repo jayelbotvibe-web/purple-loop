@@ -50,3 +50,8 @@ snapshot: ## snapshot lab state + Windows VM (save docker images)
 
 restore: ## restore lab from snapshot (RESTORE_TAG=...)
 	@bash scripts/restore.sh $(RESTORE_TAG)
+
+no-boot: ## prevent lab auto-start at boot (stops + disables restart policy)
+	@cd $(LAB_DIR) && docker compose down
+	@echo "Containers stopped. Auto-restart remains on 'always' — run 'lab-up' to start manually."
+	@echo "To permanently disable boot auto-start: sudo systemctl disable docker"

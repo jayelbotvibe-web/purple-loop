@@ -199,8 +199,14 @@ docker exec single-node-wazuh.manager-1 /var/ossec/bin/agent_control -l
 
 ```bash
 make lab-down           # stop Docker containers (data preserved)
+make no-boot            # stop + reminder to disable Docker auto-start
 ```
 On Windows VM: shut down normally via VMware.
+
+**Note on RAM:** The Wazuh indexer (OpenSearch, a Java process) uses ~4 GB RAM (`-Xms4g -Xmx4g`). If
+you're on a 16 GB machine, this may be tight with the Windows VM running. The containers do NOT
+auto-start at boot unless `restart: always` is set in docker-compose.yml and Docker itself starts
+at boot. To prevent boot auto-start: `sudo systemctl disable docker`.
 
 ## 8. Troubleshooting
 
