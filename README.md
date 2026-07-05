@@ -24,7 +24,7 @@ rules, and produces an evidence-backed coverage report. No guessing, no presence
 
 ![Pipeline diagram](docs/evidence/pipeline-diagram.png)
 
-*[More detailed view → Coverage Command Center](https://jayelbotvibe-web.github.io/purple-loop/)*
+*[More detailed view → Interactive Architecture Map](https://jayelbotvibe-web.github.io/purple-loop/)*
 
 1. **Feed** loads techniques from a plan, arbiter export, or emulation script
 2. **Execute** runs Atomic Red Team tests on lab victims (Docker Linux + VMware Windows)
