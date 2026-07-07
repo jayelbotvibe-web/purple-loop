@@ -35,4 +35,6 @@ jobs:
           fetch-depth: 0
       - name: gitleaks
         uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   # Phase 3 adds a `detections` job: sigma lint + regression vs fixtures.
