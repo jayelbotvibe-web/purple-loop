@@ -296,7 +296,12 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 func runCanaryCmd() {
 	marker := canary.NewMarker()
 	ctx := context.Background()
-	exec := &executor.SSHExecutor{Host: "192.168.88.13", User: "windows-vm", Password: "pa$$word"}
+	sshHost := os.Getenv("WINDOWS_SSH_HOST")
+	sshUser := os.Getenv("WINDOWS_SSH_USER")
+	sshPass := os.Getenv("WINDOWS_SSH_PASS")
+	if sshHost == "" { sshHost = "192.168.88.13" }
+	if sshUser == "" { sshUser = "windows-vm" }
+	exec := &executor.SSHExecutor{Host: sshHost, User: sshUser, Password: sshPass}
 	coll := &collector.WazuhCollector{ManagerContainer: "single-node-wazuh.manager-1"}
 	target := model.Target{Host: "windows-vm", Kind: "windows"}
 
