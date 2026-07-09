@@ -13,30 +13,30 @@ import (
 	"strings"
 	"time"
 
-		"github.com/jayelbotvibe-web/purple-loop/internal/collector"
-		"github.com/jayelbotvibe-web/purple-loop/internal/canary"
-		"github.com/jayelbotvibe-web/purple-loop/internal/evaluator"
-		"github.com/jayelbotvibe-web/purple-loop/internal/executor"
-		"github.com/jayelbotvibe-web/purple-loop/internal/feed"
-		"github.com/jayelbotvibe-web/purple-loop/internal/model"
-		"github.com/jayelbotvibe-web/purple-loop/internal/report"
-		"github.com/jayelbotvibe-web/purple-loop/internal/server"
+	"github.com/jayelbotvibe-web/purple-loop/internal/canary"
+	"github.com/jayelbotvibe-web/purple-loop/internal/collector"
+	"github.com/jayelbotvibe-web/purple-loop/internal/evaluator"
+	"github.com/jayelbotvibe-web/purple-loop/internal/executor"
+	"github.com/jayelbotvibe-web/purple-loop/internal/feed"
+	"github.com/jayelbotvibe-web/purple-loop/internal/model"
+	"github.com/jayelbotvibe-web/purple-loop/internal/report"
+	"github.com/jayelbotvibe-web/purple-loop/internal/server"
 )
 
 // techniqueRuleMap maps technique IDs to their Sigma rule files.
 // ponytail: embedded map, avoids JSON loading overhead.
 var techniqueRuleMap = map[string]string{
-	"T1059.004":  "detections/linux/proc_creation_susp_shell.yml",
-	"T1087.001":  "detections/linux/T1087.001.yml",
-	"T1082":      "detections/linux/T1082.yml",
-	"T1033":      "detections/linux/T1033.yml",
-	"T1007":      "detections/linux/T1007.yml",
-	"T1016":      "detections/linux/T1016.yml",
-	"T1049":      "detections/linux/T1049.yml",
-	"T1069.001":  "detections/linux/T1069.001.yml",
-	"T1069":      "detections/linux/T1069.001.yml",
-	"T1135":      "detections/linux/T1135.yml",
-	"T1518":      "detections/linux/T1518.yml",
+	"T1059.004": "detections/linux/proc_creation_susp_shell.yml",
+	"T1087.001": "detections/linux/T1087.001.yml",
+	"T1082":     "detections/linux/T1082.yml",
+	"T1033":     "detections/linux/T1033.yml",
+	"T1007":     "detections/linux/T1007.yml",
+	"T1016":     "detections/linux/T1016.yml",
+	"T1049":     "detections/linux/T1049.yml",
+	"T1069.001": "detections/linux/T1069.001.yml",
+	"T1069":     "detections/linux/T1069.001.yml",
+	"T1135":     "detections/linux/T1135.yml",
+	"T1518":     "detections/linux/T1518.yml",
 }
 
 func main() {
@@ -278,7 +278,6 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		ruleMatched = rule.Path
 	}
 
-
 	return model.ProofChain{
 		TechniqueID:     task.TechniqueID,
 		SourceCVE:       task.SourceCVE,
@@ -292,15 +291,18 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	}, nil
 }
 
-
 func runCanaryCmd() {
 	marker := canary.NewMarker()
 	ctx := context.Background()
 	sshHost := os.Getenv("WINDOWS_SSH_HOST")
 	sshUser := os.Getenv("WINDOWS_SSH_USER")
 	sshPass := os.Getenv("WINDOWS_SSH_PASS")
-	if sshHost == "" { sshHost = "192.168.88.13" }
-	if sshUser == "" { sshUser = "windows-vm" }
+	if sshHost == "" {
+		sshHost = "192.168.88.13"
+	}
+	if sshUser == "" {
+		sshUser = "windows-vm"
+	}
 	exec := &executor.SSHExecutor{Host: sshHost, User: sshUser, Password: sshPass}
 	coll := &collector.WazuhCollector{ManagerContainer: "single-node-wazuh.manager-1"}
 	target := model.Target{Host: "windows-vm", Kind: "windows"}
