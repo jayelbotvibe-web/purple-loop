@@ -101,8 +101,14 @@ func runs(w http.ResponseWriter, r *http.Request, reportsDir string) {
 		if json.Unmarshal(raw, &d) != nil {
 			continue
 		}
-		s := d["summary"].(map[string]any)
-		c := d["canary"].(map[string]any)
+		s, ok := d["summary"].(map[string]any)
+		if !ok {
+			continue // malformed run — skip
+		}
+		c, ok := d["canary"].(map[string]any)
+		if !ok {
+			continue
+		}
 		out = append(out, summary{
 			ID:           id,
 			Campaign:     str(d["campaign"]),
