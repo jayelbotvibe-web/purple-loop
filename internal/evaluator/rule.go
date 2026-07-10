@@ -130,7 +130,7 @@ func parseFieldMap(val any) (FieldMap, error) {
 }
 
 // parseCondition parses a Sigma condition string into an expression tree.
-// Grammar (ponytail: recursive descent, no external parser lib):
+// Grammar (recursive descent, no external parser lib):
 //   expr     = or_expr
 //   or_expr  = and_expr ("or" and_expr)*
 //   and_expr = not_expr ("and" not_expr)*

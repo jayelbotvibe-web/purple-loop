@@ -7,7 +7,7 @@ import (
 )
 
 // Normalizer maps Wazuh event JSON to canonical Sigma field names.
-// ponytail: derived from real captured events, not memory.
+// Field mappings are derived from real captured events.
 type Normalizer struct{}
 
 // Normalize converts a raw Wazuh event into a flat map of canonical fields.

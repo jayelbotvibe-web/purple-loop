@@ -93,6 +93,7 @@ func runs(w http.ResponseWriter, r *http.Request, reportsDir string) {
 	}
 	var out []summary
 	for _, id := range ids {
+		// #nosec G304 — id validated by idRe (no path separators)
 		raw, err := os.ReadFile(filepath.Join(reportsDir, "runs", id, "coverage.json"))
 		if err != nil {
 			continue
@@ -101,8 +102,14 @@ func runs(w http.ResponseWriter, r *http.Request, reportsDir string) {
 		if json.Unmarshal(raw, &d) != nil {
 			continue
 		}
-		s := d["summary"].(map[string]any)
-		c := d["canary"].(map[string]any)
+		s, ok := d["summary"].(map[string]any)
+		if !ok {
+			continue // malformed run — skip
+		}
+		c, ok := d["canary"].(map[string]any)
+		if !ok {
+			continue
+		}
 		out = append(out, summary{
 			ID:           id,
 			Campaign:     str(d["campaign"]),
@@ -139,6 +146,7 @@ func runDetail(w http.ResponseWriter, r *http.Request, reportsDir string) {
 
 // history returns the trend array.
 func history(w http.ResponseWriter, reportsDir string) {
+	// #nosec G304 — static path, no user input
 	raw, err := os.ReadFile(filepath.Join(reportsDir, "history.json"))
 	if err != nil {
 		jsonOK(w, []any{})
@@ -149,6 +157,7 @@ func history(w http.ResponseWriter, reportsDir string) {
 }
 
 func serveRun(w http.ResponseWriter, reportsDir, id string) {
+	// #nosec G304 — id validated by idRe (no path separators)
 	raw, err := os.ReadFile(filepath.Join(reportsDir, "runs", id, "coverage.json"))
 	if err != nil {
 		jsonErr(w, 404, "run not found")
@@ -170,7 +179,7 @@ func listRunIDs(reportsDir string) ([]string, error) {
 			ids = append(ids, e.Name())
 		}
 	}
-	// Sort newest first (ponytail: scan in reverse)
+	// Sort newest first by reversing the slice
 	for i := 0; i < len(ids)/2; i++ {
 		ids[i], ids[len(ids)-1-i] = ids[len(ids)-1-i], ids[i]
 	}
@@ -185,7 +194,7 @@ func countRuns(reportsDir string) (int, error) {
 	return len(ids), nil
 }
 
-// ponytail: helper type casts
+// Helper type casts
 func str(v any) string {
 	s, _ := v.(string)
 	return s
@@ -199,5 +208,5 @@ func boolVal(v any) bool {
 	return b
 }
 
-// ponytail: suppress unused log import
+// suppress unused log import
 func init() { _ = log.Flags }
