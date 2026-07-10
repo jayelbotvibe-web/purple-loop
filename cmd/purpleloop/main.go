@@ -1,5 +1,5 @@
 // Command purpleloop is the CLI entrypoint. Uses stdlib flag to keep
-// dependencies at zero; ponytail: cobra adds nothing flag doesn't give us.
+// dependencies at zero.
 package main
 
 import (
@@ -24,7 +24,6 @@ import (
 )
 
 // techniqueRuleMap maps technique IDs to their Sigma rule files.
-// ponytail: embedded map, avoids JSON loading overhead.
 var techniqueRuleMap = map[string]string{
 	"T1059.004": "detections/linux/proc_creation_susp_shell.yml",
 	"T1087.001": "detections/linux/T1087.001.yml",
@@ -210,7 +209,7 @@ func runEmulation(ctx context.Context, emuPath, output string, dryRun bool, vict
 					Verdict:     model.Errored,
 				}
 			}
-			// ponytail: per-stage verdict tracking via priority field
+			// per-stage verdict tracking via priority field
 			chain.ArbiterPriority = task.Priority
 			result.Chains = append(result.Chains, chain)
 		}
@@ -251,10 +250,10 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	if err != nil {
 		return model.ProofChain{}, fmt.Errorf("execute: %w", err)
 	}
-	// ponytail: cleanup is best-effort per atomic after run
+	// Cleanup is best-effort per atomic after run
 	_ = exec.Cleanup(ctx, atomic, target)
 
-	// ponytail: let Wazuh ingest telemetry before querying
+	// Let Wazuh ingest telemetry before querying
 	time.Sleep(10 * time.Second)
 
 	events, err := coll.Query(ctx, run.Window(10*time.Minute), target.Host)
@@ -262,7 +261,7 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		return model.ProofChain{}, fmt.Errorf("collect: %w", err)
 	}
 
-	// Resolve rule path from technique mapping (ponytail: embedded, no JSON load)
+	// Resolve rule path from embedded technique mapping
 	rulePath := "" // empty → evaluator returns MISSED for unmapped techniques
 	if mapped, ok := techniqueRuleMap[task.TechniqueID]; ok {
 		rulePath = mapped
@@ -325,7 +324,10 @@ func runServe() {
 	host := addr.String("addr", "127.0.0.1:8787", "listen address")
 	reports := addr.String("reports", "reports", "reports directory")
 	allowRemote := addr.Bool("allow-remote", false, "allow non-loopback binding")
-	addr.Parse(os.Args[2:])
+	if err := addr.Parse(os.Args[2:]); err != nil {
+		fmt.Fprintf(os.Stderr, "error parsing serve flags: %v\n", err)
+		os.Exit(2)
+	}
 
 	if !isLoopback(*host) && !*allowRemote {
 		fmt.Fprintf(os.Stderr, "refusing to bind %s — not loopback. Use --allow-remote to override.\n", *host)
