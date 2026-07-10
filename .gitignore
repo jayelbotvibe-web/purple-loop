@@ -13,6 +13,7 @@ lab/**/config/**/*.pem
 /bin/
 *.test
 coverage.out
+/purpleloop
 
 # reports (keep samples/ only)
 reports/
