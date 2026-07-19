@@ -15,6 +15,28 @@ import (
 	"github.com/jayelbotvibe-web/purple-loop/internal/model"
 )
 
+// timestampLayouts are tried in order when parsing Wazuh archive timestamps.
+// Wazuh emits formats like "2026-07-04T10:37:28.086+0000" (ms + numeric offset
+// without colon). Go's RFC3339Nano requires a colon in the offset, and the
+// fallback layout without fractional seconds relies on lenient parsing.
+// An explicit ordered list removes the fragility.
+var timestampLayouts = []string{
+	time.RFC3339Nano,               // "2006-01-02T15:04:05.999999999Z07:00"
+	"2006-01-02T15:04:05.000-0700", // ms + numeric offset
+	"2006-01-02T15:04:05-0700",     // no fraction + numeric offset
+}
+
+// parseTimestamp tries each known layout and returns the first successful parse.
+func parseTimestamp(s string) (time.Time, error) {
+	for _, layout := range timestampLayouts {
+		t, err := time.Parse(layout, s)
+		if err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("cannot parse timestamp %q", s)
+}
+
 // WazuhCollector reads agent alerts from the manager's alerts.json log.
 type WazuhCollector struct {
 	BaseURL          string // e.g. https://localhost:55000 — empty => dry mode
@@ -55,13 +77,9 @@ func (c *WazuhCollector) Query(ctx context.Context, w model.TimeWindow, host str
 		if err := json.Unmarshal([]byte(line), &alert); err != nil {
 			continue
 		}
-		ts, err := time.Parse(time.RFC3339Nano, alert.Timestamp)
+		ts, err := parseTimestamp(alert.Timestamp)
 		if err != nil {
-			// try without nanos
-			ts, err = time.Parse("2006-01-02T15:04:05-0700", alert.Timestamp)
-			if err != nil {
-				continue
-			}
+			continue
 		}
 		if ts.Before(w.Start) || ts.After(w.End) {
 			continue

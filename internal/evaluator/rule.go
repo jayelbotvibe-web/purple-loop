@@ -11,10 +11,10 @@ import (
 
 // Rule represents a parsed Sigma rule's detection block.
 type Rule struct {
-	Path        string
-	Title       string
-	Detections  map[string]FieldMap   // search-identifier → field conditions
-	Condition   Expr                 // parsed condition tree
+	Path       string
+	Title      string
+	Detections map[string]FieldMap // search-identifier → field conditions
+	Condition  Expr                // parsed condition tree
 }
 
 // FieldMap is a search-identifier's field→value mapping with modifiers.
@@ -50,12 +50,12 @@ type OneOfExpr struct {
 // AllOfExpr matches when all given identifiers match.
 type AllOfExpr struct{ Names []string }
 
-func (IdentExpr) isExpr()  {}
-func (AndExpr) isExpr()    {}
-func (OrExpr) isExpr()     {}
-func (NotExpr) isExpr()    {}
-func (OneOfExpr) isExpr()  {}
-func (AllOfExpr) isExpr()  {}
+func (IdentExpr) isExpr() {}
+func (AndExpr) isExpr()   {}
+func (OrExpr) isExpr()    {}
+func (NotExpr) isExpr()   {}
+func (OneOfExpr) isExpr() {}
+func (AllOfExpr) isExpr() {}
 
 // RuleParser loads a Sigma rule from a YAML file.
 type RuleParser struct{}
@@ -131,12 +131,13 @@ func parseFieldMap(val any) (FieldMap, error) {
 
 // parseCondition parses a Sigma condition string into an expression tree.
 // Grammar (recursive descent, no external parser lib):
-//   expr     = or_expr
-//   or_expr  = and_expr ("or" and_expr)*
-//   and_expr = not_expr ("and" not_expr)*
-//   not_expr = "not" not_expr | primary
-//   primary  = identifier | "(" expr ")" | aggregates
-//   aggregates = <int> "of" identifier_list | "all of" identifier_list
+//
+//	expr     = or_expr
+//	or_expr  = and_expr ("or" and_expr)*
+//	and_expr = not_expr ("and" not_expr)*
+//	not_expr = "not" not_expr | primary
+//	primary  = identifier | "(" expr ")" | aggregates
+//	aggregates = <int> "of" identifier_list | "all of" identifier_list
 func parseCondition(s string) (Expr, error) {
 	s = strings.TrimSpace(s)
 	p := &condParser{s: s, pos: 0}

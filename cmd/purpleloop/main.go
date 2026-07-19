@@ -273,7 +273,7 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	}
 
 	ruleMatched := ""
-	if verdict == model.Detected || verdict == model.Partial {
+	if verdict == model.Detected {
 		ruleMatched = rule.Path
 	}
 

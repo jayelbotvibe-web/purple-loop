@@ -101,7 +101,6 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 	}
 	total := len(result.Chains)
 	detected := counts[model.Detected]
-	partial := counts[model.Partial]
 	missed := counts[model.Missed]
 	noTel := counts[model.NoTelemetry]
 	inconclusive := counts[model.Inconclusive]
@@ -115,7 +114,6 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 	d["summary"] = map[string]any{
 		"total":        total,
 		"detected":     detected,
-		"partial":      partial,
 		"missed":       missed,
 		"no_telemetry": noTel,
 		"inconclusive": inconclusive,
@@ -142,14 +140,14 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 	var techs []map[string]any
 	for _, c := range result.Chains {
 		t := map[string]any{
-			"id":                c.TechniqueID,
-			"verdict":           string(c.Verdict),
-			"atomic":            c.Atomic.ID,
-			"command":           c.Atomic.Command,
-			"events_collected":  c.EventsCollected,
-			"rule_matched":      c.RuleMatched,
-			"arbiter_priority":  c.ArbiterPriority,
-			"source_cve":        c.SourceCVE,
+			"id":               c.TechniqueID,
+			"verdict":          string(c.Verdict),
+			"atomic":           c.Atomic.ID,
+			"command":          c.Atomic.Command,
+			"events_collected": c.EventsCollected,
+			"rule_matched":     c.RuleMatched,
+			"arbiter_priority": c.ArbiterPriority,
+			"source_cve":       c.SourceCVE,
 		}
 		// Tactic + name from embedded technique meta
 		if meta, ok := techniqueMeta[c.TechniqueID]; ok {
@@ -160,7 +158,7 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 			t["tactic"] = "Unknown"
 		}
 		// Evidence — truncate first matched event
-		if len(c.Evidence) > 0 && (c.Verdict == model.Detected || c.Verdict == model.Partial) {
+		if len(c.Evidence) > 0 && c.Verdict == model.Detected {
 			ev := string(c.Evidence[0].Raw)
 			if len(ev) > 200 {
 				ev = ev[:200]
@@ -169,8 +167,8 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 		} else {
 			t["evidence"] = ""
 		}
-		// Gap for MISSED/PARTIAL
-		if c.Verdict == model.Missed || c.Verdict == model.Partial {
+		// Gap for MISSED
+		if c.Verdict == model.Missed {
 			t["gap"] = map[string]string{"why": "", "next": ""}
 		} else {
 			t["gap"] = nil

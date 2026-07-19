@@ -237,9 +237,9 @@ const DATA = {
       <tr><td>auditd execve.a0..aN</td><td>→ CommandLine</td></tr></table>`},
   evaluator:{plane:"Engine plane",name:"Evaluator",tag:"Matches the rule — honestly.",
     does:"Parses each Sigma rule's detection block and matches its field conditions against the normalized events. A verdict reflects the rule actually firing, not the mere presence of telemetry.",
-    fn:["Native Sigma matcher: equals / contains / startswith / endswith","List OR-semantics; and / or / not conditions","Returns the matching events as evidence","Produces one of five verdict states"],
+    fn:["Native Sigma matcher: equals / contains / startswith / endswith","List OR-semantics; and / or / not conditions","Returns the matching events as evidence","Produces one of four verdict states"],
     in:"SigmaRule + events",out:"Verdict + evidence",impl:"internal/evaluator",
-    extra:`<h3>Verdict states</h3><div class="vstate"><span class="vchip">DETECTED</span><span class="vchip">PARTIAL</span><span class="vchip">MISSED</span><span class="vchip">NO_TELEMETRY</span><span class="vchip">INCONCLUSIVE</span></div>
+    extra:`<h3>Verdict states</h3><div class="vstate"><span class="vchip">DETECTED</span><span class="vchip">MISSED</span><span class="vchip">NO_TELEMETRY</span><span class="vchip">INCONCLUSIVE</span></div>
       <p style="margin-top:10px">Separating a real gap (MISSED) from a collection failure (NO_TELEMETRY) and a broken pipeline (INCONCLUSIVE) is what makes the coverage number trustworthy.</p>`},
   verdict:{plane:"Output",name:"Verdict + Proof chain",tag:"The result, plus the trail that justifies it.",
     does:"The per-technique outcome bundled with everything needed to trust it — from the arbiter priority that selected it down to the raw log line that fired the rule.",
