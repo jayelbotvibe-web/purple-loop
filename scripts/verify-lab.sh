@@ -19,8 +19,10 @@ MANAGER=$(docker compose -f lab/wazuh-docker/single-node/docker-compose.yml ps -
 echo "== verify-lab =="
 
 # 1) indexer cluster health green
+# Credentials come from the environment (or lab/secrets), never hardcoded.
+INDEXER_CRED="${WAZUH_INDEXER_USER:-admin}:${WAZUH_INDEXER_PASSWORD:?set WAZUH_INDEXER_PASSWORD}"
 health=$(docker exec "$INDEXER" \
-  curl -s -k -u admin:SecretPassword https://localhost:9200/_cluster/health 2>/dev/null || true)
+  curl -s -k -u "$INDEXER_CRED" https://localhost:9200/_cluster/health 2>/dev/null || true)
 echo "$health" | grep -q '"status":"green"' && ok "indexer cluster health green" \
   || no "indexer cluster health not green (got: ${health:-none})"
 
@@ -29,8 +31,9 @@ WAZUH_PASS="${WAZUH_API_PASSWORD:-}"
 if [ -z "$WAZUH_PASS" ] && [ -f lab/secrets/wazuh-api.env ]; then
   source lab/secrets/wazuh-api.env
 fi
+API_CRED="${WAZUH_API_USER:-wazuh-wui}:${WAZUH_API_PASSWORD:?WAZUH_API_PASSWORD not set}"
 tok=$(docker exec "$MANAGER" \
-  curl -s -k -u "${WAZUH_API_USER:-wazuh-wui}:${WAZUH_API_PASSWORD:?WAZUH_API_PASSWORD not set}" -X POST \
+  curl -s -k -u "$API_CRED" -X POST \
   "https://localhost:55000/security/user/authenticate?raw=true" 2>/dev/null || true)
 [ -n "$tok" ] && ok "manager API returned a token" || no "manager API auth failed"
 
