@@ -80,6 +80,12 @@ func matchField(eventValue string, entry FieldEntry) bool {
 		// Strip leading slash/drive for path matching
 		v := strings.ToLower(eventValue)
 		c := strings.ToLower(candidate)
+
+		// If candidate contains * wildcards, use glob-like matching
+		if strings.Contains(c, "*") {
+			return matchWildcard(v, c)
+		}
+
 		switch {
 		case hasEndsWith:
 			return strings.HasSuffix(v, c)
@@ -109,9 +115,40 @@ func matchField(eventValue string, entry FieldEntry) bool {
 	return false
 }
 
+// matchWildcard performs case-insensitive glob matching where * matches any
+// sequence of characters.  It splits the pattern on * and matches each literal
+// segment in order within the value string.
+func matchWildcard(value, pattern string) bool {
+	// A single "*" matches everything
+	if pattern == "*" {
+		return true
+	}
+
+	segments := strings.Split(pattern, "*")
+	pos := 0
+	for _, seg := range segments {
+		if seg == "" {
+			continue // leading *, trailing *, or consecutive **
+		}
+		idx := strings.Index(value[pos:], seg)
+		if idx < 0 {
+			return false
+		}
+		pos += idx + len(seg)
+	}
+	return true
+}
+
 func evalOneOf(e OneOfExpr, detections map[string]FieldMap, event map[string]string) bool {
+	names := e.Names
+	if len(names) == 0 {
+		// "1 of them" — expand to all search-identifiers
+		for k := range detections {
+			names = append(names, k)
+		}
+	}
 	matched := 0
-	for _, name := range e.Names {
+	for _, name := range names {
 		if evalIdent(name, detections, event) {
 			matched++
 		}
@@ -120,10 +157,17 @@ func evalOneOf(e OneOfExpr, detections map[string]FieldMap, event map[string]str
 }
 
 func evalAllOf(e AllOfExpr, detections map[string]FieldMap, event map[string]string) bool {
-	for _, name := range e.Names {
+	names := e.Names
+	if len(names) == 0 {
+		// "all of them" — expand to all search-identifiers
+		for k := range detections {
+			names = append(names, k)
+		}
+	}
+	for _, name := range names {
 		if !evalIdent(name, detections, event) {
 			return false
 		}
 	}
-	return true
+	return len(names) > 0 // vacuous truth over empty set → false
 }
