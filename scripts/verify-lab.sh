@@ -20,7 +20,7 @@ echo "== verify-lab =="
 
 # 1) indexer cluster health green
 health=$(docker exec "$INDEXER" \
-  curl -s -k -u admin:REDACTED-ROTATED https://localhost:9200/_cluster/health 2>/dev/null || true)
+  curl -s -k -u admin:SecretPassword https://localhost:9200/_cluster/health 2>/dev/null || true)
 echo "$health" | grep -q '"status":"green"' && ok "indexer cluster health green" \
   || no "indexer cluster health not green (got: ${health:-none})"
 
@@ -39,11 +39,11 @@ agents=$(docker exec "$MANAGER" /var/ossec/bin/agent_control -l 2>/dev/null || t
 echo "$agents" | grep -qi "victim01" && ok "victim01 registered with manager" \
   || no "victim01 not registered (check enrollment / LAB_NETWORK)"
 
-# 4) telemetry round-trip: fire an event on the victim, look for it
-docker exec purpleloop-victim sh -c 'id; whoami' >/dev/null 2>&1 || true
+# 4) telemetry round-trip: trigger a monitored command on the victim, look for it
+docker exec purpleloop-victim sh -c 'df -P' >/dev/null 2>&1 || true
 sleep 20
 hits=$(docker exec "$MANAGER" sh -c \
-  'grep -c "victim01" /var/ossec/logs/archives/archives.log 2>/dev/null || echo 0')
+  'grep -c "victim01" /var/ossec/logs/archives/archives.json 2>/dev/null || echo 0')
 [ "${hits:-0}" -gt 0 ] 2>/dev/null && ok "telemetry from victim reached manager" \
   || no "no telemetry from victim yet (enable archives, or wait longer)"
 
