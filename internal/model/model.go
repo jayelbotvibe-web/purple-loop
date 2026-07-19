@@ -14,7 +14,6 @@ type Verdict string
 
 const (
 	Detected     Verdict = "DETECTED"
-	Partial      Verdict = "PARTIAL"
 	Missed       Verdict = "MISSED"
 	NoTelemetry  Verdict = "NO_TELEMETRY"
 	Inconclusive Verdict = "INCONCLUSIVE"

@@ -32,62 +32,91 @@ func NewMarker() string {
 	return "purpleloop-canary-" + hex.EncodeToString(b)
 }
 
-// Check executes the canary on one platform and verifies the marker was detected.
-func Check(ctx context.Context, marker string, exec model.Executor,
-	coll model.Collector, platform string, target model.Target, dryRun bool) Result {
+// Checker verifies the canary marker on one platform. Zero-value fields fall
+// back to production defaults; tests override the timing and rule paths.
+type Checker struct {
+	RulePath     string        // canary Sigma rule (default: rulePath const)
+	RulesDir     string        // rules root passed to the evaluator (default: "detections")
+	PollInterval time.Duration // gap between telemetry polls (default: 5s)
+	Timeout      time.Duration // total time to wait for the marker (default: 90s)
+	WindowPad    time.Duration // padding around the run window (default: 2m)
+}
 
+func (ck Checker) withDefaults() Checker {
+	if ck.RulePath == "" {
+		ck.RulePath = rulePath
+	}
+	if ck.RulesDir == "" {
+		ck.RulesDir = "detections"
+	}
+	if ck.PollInterval == 0 {
+		ck.PollInterval = 5 * time.Second
+	}
+	if ck.Timeout == 0 {
+		ck.Timeout = 90 * time.Second
+	}
+	if ck.WindowPad == 0 {
+		ck.WindowPad = 2 * time.Minute
+	}
+	return ck
+}
+
+// Run executes the canary once, then polls telemetry until the marker is
+// detected or the timeout elapses. Executing a single time (rather than
+// re-firing on every retry) keeps the run window tight and the marker unique.
+func (ck Checker) Run(ctx context.Context, marker string, exec model.Executor,
+	coll model.Collector, platform string, target model.Target) Result {
+
+	ck = ck.withDefaults()
 	r := Result{Platform: platform, Marker: marker}
-
-	// Build the canary atomic
 	atomic := atomicFor(platform, marker)
 
-	// Execute with 3-try bounded retry for ingestion lag
-	for attempt := 0; attempt < 3; attempt++ {
-		if attempt > 0 {
-			select {
-			case <-ctx.Done():
-				r.Err = ctx.Err()
+	run, err := exec.Run(ctx, atomic, target)
+	if err != nil {
+		r.Err = fmt.Errorf("canary execute: %w", err)
+		return r
+	}
+	defer func() { _ = exec.Cleanup(ctx, atomic, target) }()
+
+	eval := evaluator.RuleMatcherEvaluator{RulesDir: ck.RulesDir}
+	rule := model.SigmaRule{Path: ck.RulePath, Title: "Pipeline Canary"}
+	window := run.Window(ck.WindowPad)
+
+	deadline := time.Now().Add(ck.Timeout)
+	for {
+		events, err := coll.Query(ctx, window, target.Host)
+		if err != nil {
+			r.Err = fmt.Errorf("canary collect: %w", err)
+		} else if len(events) > 0 {
+			verdict, evidence, err := eval.Evaluate(rule, events)
+			switch {
+			case err != nil:
+				r.Err = fmt.Errorf("canary evaluate: %w", err)
+			case verdict == model.Detected && evidenceContainsMarker(evidence, marker):
+				r.Healthy = true
+				r.Evidence = evidence
+				r.Err = nil
 				return r
-			case <-time.After(time.Duration(attempt+1) * 5 * time.Second):
 			}
 		}
 
-		run, err := exec.Run(ctx, atomic, target)
-		if err != nil {
-			r.Err = fmt.Errorf("canary execute: %w", err)
-			continue
-		}
-		_ = exec.Cleanup(ctx, atomic, target)
-
-		time.Sleep(10 * time.Second) // ingest delay
-
-		events, err := coll.Query(ctx, run.Window(2*time.Minute), target.Host)
-		if err != nil {
-			r.Err = fmt.Errorf("canary collect: %w", err)
-			continue
-		}
-		if len(events) == 0 {
-			continue
-		}
-
-		// Evaluate canary rule
-		eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections"}
-		rule := model.SigmaRule{Path: rulePath, Title: "Pipeline Canary"}
-		verdict, evidence, err := eval.Evaluate(rule, events)
-		if err != nil {
-			r.Err = fmt.Errorf("canary evaluate: %w", err)
-			continue
-		}
-
-		// Must be DETECTED AND contain exact marker
-		if verdict == model.Detected && evidenceContainsMarker(evidence, marker) {
-			r.Healthy = true
-			r.Evidence = evidence
+		if time.Now().After(deadline) {
 			return r
 		}
+		select {
+		case <-ctx.Done():
+			r.Err = ctx.Err()
+			return r
+		case <-time.After(ck.PollInterval):
+		}
 	}
+}
 
-	return r
+// Check executes the canary on one platform and verifies the marker was
+// detected, using production defaults.
+func Check(ctx context.Context, marker string, exec model.Executor,
+	coll model.Collector, platform string, target model.Target, dryRun bool) Result {
+	return Checker{}.Run(ctx, marker, exec, coll, platform, target)
 }
 
 func atomicFor(platform, marker string) model.AtomicTest {

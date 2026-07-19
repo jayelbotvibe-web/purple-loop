@@ -25,7 +25,7 @@ Priority feed → Select → Execute → Collect → Evaluate → Prove → Repo
 3. **Execute** (offense) — run the atomic on the target host. Record command, host, timestamp
 4. **Collect** (defense) — query the SIEM for events in the exact run window on that host
 5. **Evaluate** (defense) — run the Sigma rule(s) against the collected events
-6. **Prove** (verdict) — DETECTED / PARTIAL / MISSED + the evidence that supports it
+6. **Prove** (verdict) — DETECTED / MISSED + the evidence that supports it
 7. **Report** — coverage matrix, ATT&CK Navigator layer, JSON + HTML
 
 Red = offense (execute). Blue = defense (collect + evaluate). Purple = verdict (prove + report).
@@ -164,7 +164,7 @@ Detection-as-code CI green. Cross-platform: Windows victim VM + Sysmon + Windows
 **Deliverable:** Green CI badge and cross-platform coverage.
 
 ### Phase 4 · Arbiter integration (v0.5) — *the headline*
-Feed adapter consumes threat-intel-arbiter output. Campaigns run in priority order. Report headline: "top-20 exploited-in-the-wild: 14 detected, 3 partial, 3 missed."
+Feed adapter consumes threat-intel-arbiter output. Campaigns run in priority order. Report headline: "top-20 exploited-in-the-wild: 14 detected, 3 missed."
 **Deliverable:** The risk-driven story, fully wired. Interview centrepiece.
 
 ### Phase 5 · Emulation & release (v1.0)

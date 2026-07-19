@@ -1,5 +1,5 @@
 // Command purpleloop is the CLI entrypoint. Uses stdlib flag to keep
-// dependencies at zero; ponytail: cobra adds nothing flag doesn't give us.
+// dependencies at zero.
 package main
 
 import (
@@ -13,30 +13,29 @@ import (
 	"strings"
 	"time"
 
-		"github.com/jayelbotvibe-web/purple-loop/internal/collector"
-		"github.com/jayelbotvibe-web/purple-loop/internal/canary"
-		"github.com/jayelbotvibe-web/purple-loop/internal/evaluator"
-		"github.com/jayelbotvibe-web/purple-loop/internal/executor"
-		"github.com/jayelbotvibe-web/purple-loop/internal/feed"
-		"github.com/jayelbotvibe-web/purple-loop/internal/model"
-		"github.com/jayelbotvibe-web/purple-loop/internal/report"
-		"github.com/jayelbotvibe-web/purple-loop/internal/server"
+	"github.com/jayelbotvibe-web/purple-loop/internal/canary"
+	"github.com/jayelbotvibe-web/purple-loop/internal/collector"
+	"github.com/jayelbotvibe-web/purple-loop/internal/evaluator"
+	"github.com/jayelbotvibe-web/purple-loop/internal/executor"
+	"github.com/jayelbotvibe-web/purple-loop/internal/feed"
+	"github.com/jayelbotvibe-web/purple-loop/internal/model"
+	"github.com/jayelbotvibe-web/purple-loop/internal/report"
+	"github.com/jayelbotvibe-web/purple-loop/internal/server"
 )
 
 // techniqueRuleMap maps technique IDs to their Sigma rule files.
-// ponytail: embedded map, avoids JSON loading overhead.
 var techniqueRuleMap = map[string]string{
-	"T1059.004":  "detections/linux/proc_creation_susp_shell.yml",
-	"T1087.001":  "detections/linux/T1087.001.yml",
-	"T1082":      "detections/linux/T1082.yml",
-	"T1033":      "detections/linux/T1033.yml",
-	"T1007":      "detections/linux/T1007.yml",
-	"T1016":      "detections/linux/T1016.yml",
-	"T1049":      "detections/linux/T1049.yml",
-	"T1069.001":  "detections/linux/T1069.001.yml",
-	"T1069":      "detections/linux/T1069.001.yml",
-	"T1135":      "detections/linux/T1135.yml",
-	"T1518":      "detections/linux/T1518.yml",
+	"T1059.004": "detections/linux/proc_creation_susp_shell.yml",
+	"T1087.001": "detections/linux/T1087.001.yml",
+	"T1082":     "detections/linux/T1082.yml",
+	"T1033":     "detections/linux/T1033.yml",
+	"T1007":     "detections/linux/T1007.yml",
+	"T1016":     "detections/linux/T1016.yml",
+	"T1049":     "detections/linux/T1049.yml",
+	"T1069.001": "detections/linux/T1069.001.yml",
+	"T1069":     "detections/linux/T1069.001.yml",
+	"T1135":     "detections/linux/T1135.yml",
+	"T1518":     "detections/linux/T1518.yml",
 }
 
 func main() {
@@ -71,6 +70,15 @@ func main() {
 	_ = fs.Parse(os.Args[2:])
 
 	ctx := context.Background()
+
+	// Warn loudly whenever any pipeline stage is synthetic, so a dry-run report
+	// can never be mistaken for real detection evidence.
+	if *dryRun || *victim == "" || *manager == "" {
+		fmt.Fprintln(os.Stderr, "┌─────────────────────────────────────────────────────────────┐")
+		fmt.Fprintln(os.Stderr, "│  DRY-RUN / SYNTHETIC PIPELINE — results are NOT real telemetry │")
+		fmt.Fprintln(os.Stderr, "│  Missing --victim-container or --manager-container.            │")
+		fmt.Fprintln(os.Stderr, "└─────────────────────────────────────────────────────────────┘")
+	}
 
 	switch {
 	case *arbiterFile != "":
@@ -210,7 +218,7 @@ func runEmulation(ctx context.Context, emuPath, output string, dryRun bool, vict
 					Verdict:     model.Errored,
 				}
 			}
-			// ponytail: per-stage verdict tracking via priority field
+			// per-stage verdict tracking via priority field
 			chain.ArbiterPriority = task.Priority
 			result.Chains = append(result.Chains, chain)
 		}
@@ -251,10 +259,10 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	if err != nil {
 		return model.ProofChain{}, fmt.Errorf("execute: %w", err)
 	}
-	// ponytail: cleanup is best-effort per atomic after run
+	// Cleanup is best-effort per atomic after run
 	_ = exec.Cleanup(ctx, atomic, target)
 
-	// ponytail: let Wazuh ingest telemetry before querying
+	// Let Wazuh ingest telemetry before querying
 	time.Sleep(10 * time.Second)
 
 	events, err := coll.Query(ctx, run.Window(10*time.Minute), target.Host)
@@ -262,7 +270,7 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 		return model.ProofChain{}, fmt.Errorf("collect: %w", err)
 	}
 
-	// Resolve rule path from technique mapping (ponytail: embedded, no JSON load)
+	// Resolve rule path from embedded technique mapping
 	rulePath := "" // empty → evaluator returns MISSED for unmapped techniques
 	if mapped, ok := techniqueRuleMap[task.TechniqueID]; ok {
 		rulePath = mapped
@@ -274,10 +282,9 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	}
 
 	ruleMatched := ""
-	if verdict == model.Detected || verdict == model.Partial {
+	if verdict == model.Detected {
 		ruleMatched = rule.Path
 	}
-
 
 	return model.ProofChain{
 		TechniqueID:     task.TechniqueID,
@@ -292,11 +299,19 @@ func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector
 	}, nil
 }
 
-
 func runCanaryCmd() {
 	marker := canary.NewMarker()
 	ctx := context.Background()
-	exec := &executor.SSHExecutor{Host: "192.168.88.13", User: "windows-vm", Password: "REDACTED-ROTATED"}
+	sshHost := os.Getenv("WINDOWS_SSH_HOST")
+	sshUser := os.Getenv("WINDOWS_SSH_USER")
+	sshPass := os.Getenv("WINDOWS_SSH_PASS")
+	if sshHost == "" {
+		sshHost = "192.168.88.13"
+	}
+	if sshUser == "" {
+		sshUser = "windows-vm"
+	}
+	exec := &executor.SSHExecutor{Host: sshHost, User: sshUser, Password: sshPass}
 	coll := &collector.WazuhCollector{ManagerContainer: "single-node-wazuh.manager-1"}
 	target := model.Target{Host: "windows-vm", Kind: "windows"}
 
@@ -318,7 +333,10 @@ func runServe() {
 	host := addr.String("addr", "127.0.0.1:8787", "listen address")
 	reports := addr.String("reports", "reports", "reports directory")
 	allowRemote := addr.Bool("allow-remote", false, "allow non-loopback binding")
-	addr.Parse(os.Args[2:])
+	if err := addr.Parse(os.Args[2:]); err != nil {
+		fmt.Fprintf(os.Stderr, "error parsing serve flags: %v\n", err)
+		os.Exit(2)
+	}
 
 	if !isLoopback(*host) && !*allowRemote {
 		fmt.Fprintf(os.Stderr, "refusing to bind %s — not loopback. Use --allow-remote to override.\n", *host)

@@ -53,7 +53,7 @@ h1{color:#fff}table{width:100%;border-collapse:collapse;margin-top:1em}
 th,td{padding:.5em .75em;text-align:left;border-bottom:1px solid #333}
 th{background:#1a1a2e;color:#ccc}
 tr:hover{background:#1a1a2e}
-.DETECTED{color:#4f4}.PARTIAL{color:#fa0}.MISSED{color:#f44}.ERROR{color:#f0f}
+.DETECTED{color:#4f4}.MISSED{color:#f44}.ERROR{color:#f0f}.NO_TELEMETRY{color:#fb0}.INCONCLUSIVE{color:#aaa}
 .summary{display:flex;gap:1.5em;margin:1em 0}
 .summary span{font-size:1.2em}
 </style></head><body>
@@ -61,7 +61,7 @@ tr:hover{background:#1a1a2e}
 <p>` + html.EscapeString(run.StartedAt.Format("2006-01-02 15:04:05 UTC")) + `</p>
 <div class="summary">`)
 
-	for _, v := range []model.Verdict{model.Detected, model.Partial, model.Missed, model.Errored} {
+	for _, v := range []model.Verdict{model.Detected, model.Missed, model.NoTelemetry, model.Inconclusive, model.Errored} {
 		if n, ok := counts[v]; ok && n > 0 {
 			f.WriteString(fmt.Sprintf(`<span class="%s">%s: %d</span>`, v, v, n))
 		}
@@ -99,11 +99,10 @@ func narrativeHeadline(counts map[model.Verdict]int) string {
 		return "No techniques tested."
 	}
 	det := counts[model.Detected]
-	part := counts[model.Partial]
 	miss := counts[model.Missed]
 	errs := counts[model.Errored]
-	return fmt.Sprintf("Top %d exploited-in-the-wild: %d detected / %d partial / %d missed",
-		total, det, part, miss+errs)
+	return fmt.Sprintf("Top %d exploited-in-the-wild: %d detected / %d missed",
+		total, det, miss+errs)
 }
 
 // NavigatorLayerReporter writes an ATT&CK Navigator layer JSON file.
@@ -119,11 +118,11 @@ func (r NavigatorLayerReporter) Write(run model.CampaignResult) error {
 		Comment     string `json:"comment,omitempty"`
 	}
 	type navLayer struct {
-		Name        string         `json:"name"`
-		Description string         `json:"description"`
-		Domain      string         `json:"domain"`
+		Name        string            `json:"name"`
+		Description string            `json:"description"`
+		Domain      string            `json:"domain"`
 		Versions    map[string]string `json:"versions"`
-		Techniques  []navTechnique `json:"techniques"`
+		Techniques  []navTechnique    `json:"techniques"`
 		Gradient    struct {
 			Colors []string `json:"colors"`
 			MinVal int      `json:"minValue"`
@@ -136,7 +135,6 @@ func (r NavigatorLayerReporter) Write(run model.CampaignResult) error {
 		score int
 	}{
 		model.Detected: {"#4caf50", 100},
-		model.Partial:  {"#ff9800", 50},
 		model.Missed:   {"#f44336", 0},
 		model.Errored:  {"#e91e63", 0},
 	}

@@ -53,7 +53,9 @@ func (r DashboardReporter) Write(result model.CampaignResult) error {
 
 	// Static snapshot for GitHub Pages
 	docsDir := "docs/data"
-	os.MkdirAll(docsDir, 0755)
+	if err := os.MkdirAll(docsDir, 0755); err != nil {
+		return err
+	}
 	return os.WriteFile(filepath.Join(docsDir, "coverage.json"), data, 0644)
 }
 
@@ -62,7 +64,10 @@ func appendHistory(dir string, entry map[string]any) error {
 	var history []map[string]any
 
 	if raw, err := os.ReadFile(path); err == nil {
-		json.Unmarshal(raw, &history)
+		if err := json.Unmarshal(raw, &history); err != nil {
+			// corrupted history file — start fresh
+			history = nil
+		}
 	}
 	history = append(history, entry)
 
@@ -80,7 +85,7 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 		"build":        "v1.3.0",
 	}
 
-	// Canary (ponytail: per-platform from result if available, else default healthy)
+	// Canary (per-platform from result if available, else default healthy)
 	d["canary"] = map[string]any{
 		"healthy": true,
 		"platforms": []map[string]any{
@@ -96,7 +101,6 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 	}
 	total := len(result.Chains)
 	detected := counts[model.Detected]
-	partial := counts[model.Partial]
 	missed := counts[model.Missed]
 	noTel := counts[model.NoTelemetry]
 	inconclusive := counts[model.Inconclusive]
@@ -110,14 +114,13 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 	d["summary"] = map[string]any{
 		"total":        total,
 		"detected":     detected,
-		"partial":      partial,
 		"missed":       missed,
 		"no_telemetry": noTel,
 		"inconclusive": inconclusive,
 		"coverage_pct": pct,
 	}
 
-	// Readiness (ponytail: stub — arbiter campaign not wired here yet)
+	// Readiness (stub — arbiter campaign not wired here yet)
 	d["readiness"] = map[string]any{
 		"source":  "threat-intel-arbiter",
 		"covered": detected,
@@ -125,26 +128,26 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 		"gaps":    total - detected,
 	}
 
-	// Tactics (ponytail: from embedded mapping)
+	// Tactics from embedded mapping
 	tactics := []string{"Execution", "Persistence", "Privilege Escalation",
 		"Defense Evasion", "Credential Access", "Discovery", "Command & Control"}
 	d["tactics"] = tactics
 
-	// Untested (ponytail: empty for now)
+	// Untested (empty for now)
 	d["untested"] = map[string]int{}
 
 	// Techniques
 	var techs []map[string]any
 	for _, c := range result.Chains {
 		t := map[string]any{
-			"id":                c.TechniqueID,
-			"verdict":           string(c.Verdict),
-			"atomic":            c.Atomic.ID,
-			"command":           c.Atomic.Command,
-			"events_collected":  c.EventsCollected,
-			"rule_matched":      c.RuleMatched,
-			"arbiter_priority":  c.ArbiterPriority,
-			"source_cve":        c.SourceCVE,
+			"id":               c.TechniqueID,
+			"verdict":          string(c.Verdict),
+			"atomic":           c.Atomic.ID,
+			"command":          c.Atomic.Command,
+			"events_collected": c.EventsCollected,
+			"rule_matched":     c.RuleMatched,
+			"arbiter_priority": c.ArbiterPriority,
+			"source_cve":       c.SourceCVE,
 		}
 		// Tactic + name from embedded technique meta
 		if meta, ok := techniqueMeta[c.TechniqueID]; ok {
@@ -155,7 +158,7 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 			t["tactic"] = "Unknown"
 		}
 		// Evidence — truncate first matched event
-		if len(c.Evidence) > 0 && (c.Verdict == model.Detected || c.Verdict == model.Partial) {
+		if len(c.Evidence) > 0 && c.Verdict == model.Detected {
 			ev := string(c.Evidence[0].Raw)
 			if len(ev) > 200 {
 				ev = ev[:200]
@@ -164,8 +167,8 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 		} else {
 			t["evidence"] = ""
 		}
-		// Gap for MISSED/PARTIAL
-		if c.Verdict == model.Missed || c.Verdict == model.Partial {
+		// Gap for MISSED
+		if c.Verdict == model.Missed {
 			t["gap"] = map[string]string{"why": "", "next": ""}
 		} else {
 			t["gap"] = nil
@@ -177,7 +180,7 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 	return d
 }
 
-// techniqueMeta — ponytail: embedded technique name/tactic map.
+// techniqueMeta — embedded technique name/tactic map.
 var techniqueMeta = map[string]struct{ name, tactic string }{
 	"T1059.004": {"Unix Shell", "Execution"},
 	"T1087.001": {"Local Account Discovery", "Discovery"},

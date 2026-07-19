@@ -139,7 +139,17 @@ go test ./internal/evaluator/ -v -run Regression
 ## Supported Sigma subset
 
 The native Go matcher supports the Sigma specification subset needed for process-creation rules:
-field modifiers (`contains`, `startswith`, `endswith`, `|all`), condition grammar (`and`/`or`/`not`/parens/`1 of them`/`all of them`), and case-insensitive matching. Not yet supported: regex, aggregation expressions, `near`, correlated rules.
+field modifiers (`contains`, `startswith`, `endswith`, `|all`, `re`, numeric `lt`/`lte`/`gt`/`gte`),
+`*` wildcards in values, keyword (full-text) search identifiers, condition grammar
+(`and`/`or`/`not`/parens/`1 of them`/`all of them`), and case-insensitive matching. Not yet
+supported: aggregation expressions, `near`, correlated rules, `base64`/`cidr` modifiers.
+
+**Evidence fidelity.** For `process_creation` rules the evaluator only accepts genuine
+process-creation telemetry (Sysmon/EventChannel `eventdata`, auditd `execve`). Command-output and
+metadata scrapes (`full_log`, decoder name) are tagged low-fidelity and can never satisfy a
+process-creation rule — so a log line that merely mentions a binary cannot produce a false
+`DETECTED`. When a technique collects only low-fidelity events, the verdict is `NO_TELEMETRY`
+(a collection gap), not `MISSED`.
 
 ## Limitations
 
