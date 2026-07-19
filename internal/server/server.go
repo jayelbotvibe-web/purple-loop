@@ -2,8 +2,8 @@
 package server
 
 import (
-	"encoding/json"
 	"embed"
+	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"

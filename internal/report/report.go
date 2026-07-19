@@ -53,7 +53,7 @@ h1{color:#fff}table{width:100%;border-collapse:collapse;margin-top:1em}
 th,td{padding:.5em .75em;text-align:left;border-bottom:1px solid #333}
 th{background:#1a1a2e;color:#ccc}
 tr:hover{background:#1a1a2e}
-.DETECTED{color:#4f4}.MISSED{color:#f44}.ERROR{color:#f0f}
+.DETECTED{color:#4f4}.MISSED{color:#f44}.ERROR{color:#f0f}.NO_TELEMETRY{color:#fb0}.INCONCLUSIVE{color:#aaa}
 .summary{display:flex;gap:1.5em;margin:1em 0}
 .summary span{font-size:1.2em}
 </style></head><body>
@@ -61,7 +61,7 @@ tr:hover{background:#1a1a2e}
 <p>` + html.EscapeString(run.StartedAt.Format("2006-01-02 15:04:05 UTC")) + `</p>
 <div class="summary">`)
 
-	for _, v := range []model.Verdict{model.Detected, model.Missed, model.Errored} {
+	for _, v := range []model.Verdict{model.Detected, model.Missed, model.NoTelemetry, model.Inconclusive, model.Errored} {
 		if n, ok := counts[v]; ok && n > 0 {
 			f.WriteString(fmt.Sprintf(`<span class="%s">%s: %d</span>`, v, v, n))
 		}
