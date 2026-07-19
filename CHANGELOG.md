@@ -1,6 +1,24 @@
 # Changelog
 All notable changes to this project follow Keep a Changelog and Semantic Versioning.
 
+## [Unreleased]
+### Added
+- Evidence fidelity: normalizer tags each event's source; `process_creation` rules now
+  only accept genuine process-creation telemetry (Sysmon/EventChannel eventdata, auditd
+  execve). Low-fidelity `full_log`/decoder scrapes can no longer produce a false `DETECTED`.
+- Sigma matcher coverage: `re` (regex), numeric `lt`/`lte`/`gt`/`gte`, and keyword
+  (full-text search) identifiers.
+- Wazuh collector date pre-filter: queries read only the day(s) a window spans instead of
+  the whole archive; scanner buffer enlarged so long archive events are no longer truncated.
+- Unit tests for the previously untested `canary` and `report` packages.
+### Changed
+- Canary now executes once and polls telemetry until a deadline (configurable via `Checker`)
+  instead of re-firing on fixed-interval retries.
+- Techniques whose collected events are all low-fidelity report `NO_TELEMETRY` (collection
+  gap) rather than `MISSED` (proven detection miss).
+- Dry-run / synthetic pipeline prints an unmistakable banner so its output cannot be mistaken
+  for real telemetry.
+
 ## [1.2.0] — 2026-07-04
 ### Added
 - Pipeline canary (positive control): per-run marker, gating logic, `make canary`

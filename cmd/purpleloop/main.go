@@ -71,6 +71,15 @@ func main() {
 
 	ctx := context.Background()
 
+	// Warn loudly whenever any pipeline stage is synthetic, so a dry-run report
+	// can never be mistaken for real detection evidence.
+	if *dryRun || *victim == "" || *manager == "" {
+		fmt.Fprintln(os.Stderr, "┌─────────────────────────────────────────────────────────────┐")
+		fmt.Fprintln(os.Stderr, "│  DRY-RUN / SYNTHETIC PIPELINE — results are NOT real telemetry │")
+		fmt.Fprintln(os.Stderr, "│  Missing --victim-container or --manager-container.            │")
+		fmt.Fprintln(os.Stderr, "└─────────────────────────────────────────────────────────────┘")
+	}
+
 	switch {
 	case *arbiterFile != "":
 		if err := runArbiter(ctx, *arbiterFile, *output, *dryRun, *victim, *manager); err != nil {

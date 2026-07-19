@@ -12,9 +12,9 @@ import (
 
 // EmulationPlan is a multi-stage actor emulation plan.
 type EmulationPlan struct {
-	Name        string              `yaml:"name"`
-	Description string              `yaml:"description"`
-	Stages      []EmulationStage    `yaml:"stages"`
+	Name        string           `yaml:"name"`
+	Description string           `yaml:"description"`
+	Stages      []EmulationStage `yaml:"stages"`
 }
 
 // EmulationStage is one tactical phase in an emulation plan.

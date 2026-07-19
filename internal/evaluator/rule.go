@@ -4,6 +4,7 @@ package evaluator
 
 import (
 	"os"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -13,6 +14,7 @@ import (
 type Rule struct {
 	Path       string
 	Title      string
+	Category   string              // logsource.category, e.g. "process_creation"
 	Detections map[string]FieldMap // search-identifier → field conditions
 	Condition  Expr                // parsed condition tree
 }
@@ -68,6 +70,9 @@ func (RuleParser) Parse(path string) (*Rule, error) {
 	}
 	var raw struct {
 		Title     string `yaml:"title"`
+		Logsource struct {
+			Category string `yaml:"category"`
+		} `yaml:"logsource"`
 		Detection struct {
 			Condition string         `yaml:"condition"`
 			Fields    map[string]any `yaml:",inline"`
@@ -77,7 +82,7 @@ func (RuleParser) Parse(path string) (*Rule, error) {
 		return nil, err
 	}
 
-	rule := &Rule{Path: path, Title: raw.Title}
+	rule := &Rule{Path: path, Title: raw.Title, Category: raw.Logsource.Category}
 
 	// Parse search-identifiers (all fields except "condition")
 	rule.Detections = make(map[string]FieldMap)
@@ -101,8 +106,43 @@ func (RuleParser) Parse(path string) (*Rule, error) {
 	return rule, nil
 }
 
+// scalarToString coerces a YAML scalar (string, int, float, bool) into the
+// string form the matcher compares against. Returns "" for unsupported types.
+func scalarToString(v any) string {
+	switch t := v.(type) {
+	case string:
+		return t
+	case bool:
+		return strconv.FormatBool(t)
+	case int:
+		return strconv.Itoa(t)
+	case int64:
+		return strconv.FormatInt(t, 10)
+	case float64:
+		return strconv.FormatFloat(t, 'f', -1, 64)
+	default:
+		return ""
+	}
+}
+
 func parseFieldMap(val any) (FieldMap, error) {
 	fm := make(FieldMap)
+
+	// A bare list of strings is a keyword (full-text) identifier, not a set of
+	// field conditions. Store it under the reserved keyword field.
+	if list, ok := val.([]any); ok {
+		var kw []string
+		for _, item := range list {
+			if s, ok := item.(string); ok {
+				kw = append(kw, s)
+			}
+		}
+		if len(kw) > 0 {
+			fm[keywordField] = FieldEntry{Values: kw}
+		}
+		return fm, nil
+	}
+
 	m, ok := val.(map[string]any)
 	if !ok {
 		return fm, nil
@@ -113,15 +153,20 @@ func parseFieldMap(val any) (FieldMap, error) {
 		parts := strings.Split(key, "|")
 		fieldName := parts[0]
 		entry.Modifiers = parts[1:]
-		// Parse value(s)
+		// Parse value(s). Scalars may be strings, numbers, or booleans
+		// (e.g. `EventID: 4688`, `Count|gt: 5`); coerce each to its string form.
 		switch vv := v.(type) {
 		case string:
 			entry.Values = []string{vv}
 		case []any:
 			for _, item := range vv {
-				if s, ok := item.(string); ok {
+				if s := scalarToString(item); s != "" {
 					entry.Values = append(entry.Values, s)
 				}
+			}
+		default:
+			if s := scalarToString(vv); s != "" {
+				entry.Values = []string{s}
 			}
 		}
 		fm[fieldName] = entry
