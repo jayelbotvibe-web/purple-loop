@@ -2,6 +2,37 @@
 All notable changes to this project follow Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
+### Fixed (2026-07 code review — trust contracts enforced in code, not just docs)
+- **Canary gating now runs in the pipeline.** Every `run` path executes the positive
+  control against the same Linux/Docker executor+collector the campaign uses; if it does
+  not fire, the run is marked `INCONCLUSIVE` and its coverage is not presented or published.
+  Previously the canary ran only in the standalone `canary` subcommand and no `run` was ever
+  gated.
+- **Dashboard canary status is the real result**, never hardcoded `healthy:true`.
+- **Dry/synthetic runs are marked non-evidentiary end to end** (`CampaignResult.Synthetic`):
+  loud banner in the HTML/Navigator output, and such runs are never appended to `history.json`
+  or published to `docs/data/coverage.json`.
+- **Partial container config is rejected** — a real run requires both `--victim-container`
+  and `--manager-container` (or `--dry-run`), so a real atomic is never paired with a
+  synthetic collector.
+- **Fidelity gate corrected**: only genuine process-creation events (Sysmon 1 / Security 4688,
+  or the image+commandLine signature) are treated as process telemetry. Enumeration/network
+  events (e.g. 4798 `callerProcessName`) no longer credit a process-creation detection.
+- **Unsupported Sigma modifiers** (base64, cidr, windash, …) now yield `INCONCLUSIVE`, not a
+  silent `MISSED`.
+- **Sigma matcher correctness**: wildcards compile to anchored regexps (`?` supported,
+  `*\svchost.exe` no longer matches `…svchost.exe.malware`, metacharacters escaped);
+  `N of prefix_*` / `all of prefix_*` expand by glob and no longer drop the trailing
+  `and not filter`; `Field: null` matches absent fields; `not(...)` (no space) parses; `of
+  them` excludes filter/falsepositive identifiers.
+- **Evidence window** pads only the end (ingestion lag), not the start — a query can no
+  longer reach back and credit an earlier run's events (false `DETECTED`).
+- **Collector date pre-filter** widened ±1 day so a non-UTC Wazuh timestamp near a day
+  boundary is not dropped before the precise instant check.
+- Removed the hardcoded `admin:SecretPassword` from `scripts/verify-lab.sh` (now sourced from
+  env / the gitignored secrets file, matching the manager check). Removed dead
+  `BaseURL`/`User`/`Pass` collector fields and the unused `canary.Check` dry-run parameter.
+
 ### Added
 - Evidence fidelity: normalizer tags each event's source; `process_creation` rules now
   only accept genuine process-creation telemetry (Sysmon/EventChannel eventdata, auditd

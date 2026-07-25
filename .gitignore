@@ -22,3 +22,6 @@ reports/
 # os / editor
 .DS_Store
 *.swp
+
+# local go test cache (see review remediation)
+.gotmp/

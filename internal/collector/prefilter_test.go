@@ -19,8 +19,11 @@ func TestDateAlternation(t *testing.T) {
 		w    model.TimeWindow
 		want string
 	}{
-		{"same day", mk("2026-07-04T09:00:00Z", "2026-07-04T09:05:00Z"), "2026-07-04"},
-		{"spans midnight", mk("2026-07-04T23:59:00Z", "2026-07-05T00:02:00Z"), "2026-07-04|2026-07-05"},
+		// The alternation is widened by one day on each side so a non-UTC
+		// Wazuh timestamp whose literal date lands on an adjacent day is not
+		// dropped by the coarse pre-filter (the precise instant check still bounds it).
+		{"same day", mk("2026-07-04T09:00:00Z", "2026-07-04T09:05:00Z"), "2026-07-03|2026-07-04|2026-07-05"},
+		{"spans midnight", mk("2026-07-04T23:59:00Z", "2026-07-05T00:02:00Z"), "2026-07-03|2026-07-04|2026-07-05|2026-07-06"},
 		{"zero window", model.TimeWindow{}, ""},
 		{"reversed", mk("2026-07-05T00:00:00Z", "2026-07-04T00:00:00Z"), ""},
 	}

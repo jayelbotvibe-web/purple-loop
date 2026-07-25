@@ -37,6 +37,13 @@ func (r DashboardReporter) Write(result model.CampaignResult) error {
 		return err
 	}
 
+	// Synthetic or inconclusive runs are NOT valid coverage: keep the per-run
+	// artifact above (marked, for the operator) but never append them to the
+	// history index or publish them to the public Pages snapshot.
+	if result.Synthetic || result.Inconclusive {
+		return nil
+	}
+
 	// History index
 	s := d["summary"].(map[string]any)
 	c := d["canary"].(map[string]any)
@@ -85,12 +92,17 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 		"build":        "v1.3.0",
 	}
 
-	// Canary (per-platform from result if available, else default healthy)
+	// Canary — the REAL positive-control result for this run (never hardcoded).
+	// A synthetic or inconclusive run is not healthy: the dashboard keys its
+	// "inconclusive" banner off this flag.
+	canaryHealthy := result.CanaryHealthy && !result.Synthetic && !result.Inconclusive
 	d["canary"] = map[string]any{
-		"healthy": true,
+		"healthy":      canaryHealthy,
+		"synthetic":    result.Synthetic,
+		"inconclusive": result.Inconclusive,
+		"detail":       result.CanaryDetail,
 		"platforms": []map[string]any{
-			{"name": "linux", "healthy": true},
-			{"name": "windows", "healthy": true},
+			{"name": "linux", "healthy": canaryHealthy},
 		},
 	}
 

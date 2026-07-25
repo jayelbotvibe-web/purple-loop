@@ -71,6 +71,14 @@ func main() {
 
 	ctx := context.Background()
 
+	// A partial container config would fire a REAL atomic on the victim while
+	// collecting from a dry (synthetic) SIEM — a real attack paired with a
+	// fabricated event. Reject it: a real run needs both, or pass --dry-run.
+	if !*dryRun && (*victim == "") != (*manager == "") {
+		fmt.Fprintln(os.Stderr, "error: a real run needs BOTH --victim-container and --manager-container (or pass --dry-run)")
+		os.Exit(2)
+	}
+
 	// Warn loudly whenever any pipeline stage is synthetic, so a dry-run report
 	// can never be mistaken for real detection evidence.
 	if *dryRun || *victim == "" || *manager == "" {
@@ -134,6 +142,71 @@ func newReporter(output string) model.Reporter {
 	return report.JSONReporter{Out: os.Stdout}
 }
 
+// runOpts carries the shared pipeline configuration for a run command.
+type runOpts struct {
+	output           string
+	dryRun           bool
+	victimContainer  string
+	managerContainer string
+}
+
+// synthetic reports whether any pipeline stage is dry/synthetic. Such a run's
+// results are NOT real telemetry and must be marked non-evidentiary.
+func (o runOpts) synthetic() bool {
+	return o.dryRun || o.victimContainer == "" || o.managerContainer == ""
+}
+
+// runTasks drives a set of tasks through the pipeline, applying BOTH hard
+// contracts in one place so no run command can bypass them:
+//   - synthetic marking (dry pipeline → not real evidence), and
+//   - canary gating (a real run whose positive control does not fire is
+//     INCONCLUSIVE and its coverage must not be presented as valid).
+func runTasks(ctx context.Context, tasks []model.TechniqueTask, o runOpts) error {
+	exec := newExec(o.dryRun, o.victimContainer)
+	coll := newColl(o.dryRun, o.managerContainer)
+	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
+	target := model.Target{Host: "victim01", Kind: "linux"}
+
+	result := model.CampaignResult{StartedAt: time.Now().UTC(), Synthetic: o.synthetic()}
+
+	// Canary gate — the pipeline positive control, run against the SAME
+	// executor/collector/target the campaign uses (the Linux/Docker path).
+	// Skipped for synthetic runs (already marked non-evidentiary above).
+	if !result.Synthetic {
+		cr := canary.Check(ctx, canary.NewMarker(), exec, coll, target.Kind, target)
+		result.CanaryHealthy = cr.Healthy
+		if !cr.Healthy {
+			result.Inconclusive = true
+			result.CanaryDetail = canaryFailDetail(cr)
+			fmt.Fprintf(os.Stderr, "INCONCLUSIVE: %s — coverage will not be reported as valid\n", result.CanaryDetail)
+		}
+	}
+
+	for _, task := range tasks {
+		chain, err := runTechnique(ctx, exec, coll, eval, task, target)
+		if err != nil {
+			chain = model.ProofChain{TechniqueID: task.TechniqueID, Verdict: model.Errored}
+		}
+		chain.SourceCVE = task.SourceCVE
+		chain.ArbiterPriority = task.Priority
+		if result.Inconclusive {
+			// Without a working positive control, no per-technique verdict is
+			// trustworthy — do not present DETECTED/MISSED as coverage.
+			chain.Verdict = model.Inconclusive
+		}
+		result.Chains = append(result.Chains, chain)
+	}
+
+	return newReporter(o.output).Write(result)
+}
+
+func canaryFailDetail(cr canary.Result) string {
+	if cr.Err != nil {
+		return fmt.Sprintf("canary not detected on %s: %v", cr.Platform, cr.Err)
+	}
+	return fmt.Sprintf("canary not detected on %s", cr.Platform)
+}
+
 func runCampaign(ctx context.Context, planPath, output string, dryRun bool, victimContainer, managerContainer string) error {
 	var f feed.StaticFeed
 	if err := f.Load(planPath); err != nil {
@@ -143,25 +216,7 @@ func runCampaign(ctx context.Context, planPath, output string, dryRun bool, vict
 	if err != nil {
 		return fmt.Errorf("feed: %w", err)
 	}
-
-	exec := newExec(dryRun, victimContainer)
-	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
-	rep := newReporter(output)
-	target := model.Target{Host: "victim01", Kind: "linux"}
-
-	result := model.CampaignResult{StartedAt: time.Now().UTC()}
-	for _, task := range tasks {
-		chain, err := runTechnique(ctx, exec, coll, eval, task, target)
-		if err != nil {
-			chain = model.ProofChain{
-				TechniqueID: task.TechniqueID,
-				Verdict:     model.Errored,
-			}
-		}
-		result.Chains = append(result.Chains, chain)
-	}
-	return rep.Write(result)
+	return runTasks(ctx, tasks, runOpts{output, dryRun, victimContainer, managerContainer})
 }
 
 func runArbiter(ctx context.Context, arbiterPath, output string, dryRun bool, victimContainer, managerContainer string) error {
@@ -173,27 +228,7 @@ func runArbiter(ctx context.Context, arbiterPath, output string, dryRun bool, vi
 	if err != nil {
 		return fmt.Errorf("arbiter feed: %w", err)
 	}
-
-	exec := newExec(dryRun, victimContainer)
-	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
-	rep := newReporter(output)
-	target := model.Target{Host: "victim01", Kind: "linux"}
-
-	result := model.CampaignResult{StartedAt: time.Now().UTC()}
-	for _, task := range tasks {
-		chain, err := runTechnique(ctx, exec, coll, eval, task, target)
-		if err != nil {
-			chain = model.ProofChain{
-				TechniqueID: task.TechniqueID,
-				Verdict:     model.Errored,
-			}
-		}
-		chain.SourceCVE = task.SourceCVE
-		chain.ArbiterPriority = task.Priority
-		result.Chains = append(result.Chains, chain)
-	}
-	return rep.Write(result)
+	return runTasks(ctx, tasks, runOpts{output, dryRun, victimContainer, managerContainer})
 }
 
 func runEmulation(ctx context.Context, emuPath, output string, dryRun bool, victimContainer, managerContainer string) error {
@@ -201,45 +236,16 @@ func runEmulation(ctx context.Context, emuPath, output string, dryRun bool, vict
 	if err != nil {
 		return fmt.Errorf("load emulation: %w", err)
 	}
-
-	exec := newExec(dryRun, victimContainer)
-	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
-	rep := newReporter(output)
-	target := model.Target{Host: "victim01", Kind: "linux"}
-
-	result := model.CampaignResult{StartedAt: time.Now().UTC()}
+	var tasks []model.TechniqueTask
 	for _, stage := range plan.Stages {
-		for _, task := range stage.ToTasks() {
-			chain, err := runTechnique(ctx, exec, coll, eval, task, target)
-			if err != nil {
-				chain = model.ProofChain{
-					TechniqueID: task.TechniqueID,
-					Verdict:     model.Errored,
-				}
-			}
-			// per-stage verdict tracking via priority field
-			chain.ArbiterPriority = task.Priority
-			result.Chains = append(result.Chains, chain)
-		}
+		tasks = append(tasks, stage.ToTasks()...)
 	}
-	return rep.Write(result)
+	return runTasks(ctx, tasks, runOpts{output, dryRun, victimContainer, managerContainer})
 }
 
 func runOne(ctx context.Context, technique, output string, dryRun bool, victimContainer, managerContainer string) error {
-	exec := newExec(dryRun, victimContainer)
-	coll := newColl(dryRun, managerContainer)
-	eval := evaluator.RuleMatcherEvaluator{RulesDir: "detections/linux"}
-	rep := newReporter(output)
-
 	task := model.TechniqueTask{TechniqueID: technique, AtomicIDs: []string{technique + "-1"}}
-	target := model.Target{Host: "victim01", Kind: "linux"}
-
-	chain, err := runTechnique(ctx, exec, coll, eval, task, target)
-	if err != nil {
-		return err
-	}
-	return rep.Write(model.CampaignResult{StartedAt: time.Now().UTC(), Chains: []model.ProofChain{chain}})
+	return runTasks(ctx, []model.TechniqueTask{task}, runOpts{output, dryRun, victimContainer, managerContainer})
 }
 
 func runTechnique(ctx context.Context, exec model.Executor, coll model.Collector, eval model.Evaluator, task model.TechniqueTask, target model.Target) (model.ProofChain, error) {
@@ -316,7 +322,7 @@ func runCanaryCmd() {
 	target := model.Target{Host: "windows-vm", Kind: "windows"}
 
 	fmt.Printf("Canary marker: %s\n", marker)
-	result := canary.Check(ctx, marker, exec, coll, "windows", target, false)
+	result := canary.Check(ctx, marker, exec, coll, "windows", target)
 	if result.Healthy {
 		fmt.Printf("Canary: DETECTED on %s (evidence: %d events)\n", result.Platform, len(result.Evidence))
 	} else {

@@ -58,8 +58,18 @@ tr:hover{background:#1a1a2e}
 .summary span{font-size:1.2em}
 </style></head><body>
 <h1>Purple Loop — Coverage Report</h1>
-<p>` + html.EscapeString(run.StartedAt.Format("2006-01-02 15:04:05 UTC")) + `</p>
-<div class="summary">`)
+<p>` + html.EscapeString(run.StartedAt.Format("2006-01-02 15:04:05 UTC")) + `</p>`)
+
+	// Trust banners — an operator must never mistake a synthetic or
+	// canary-failed report for verified coverage.
+	if run.Synthetic {
+		f.WriteString(`<div style="background:#7f1d1d;color:#fff;padding:1em;border-radius:4px;margin:1em 0;font-weight:bold;text-align:center">⚠ SYNTHETIC / DRY-RUN PIPELINE — these results are NOT real telemetry and must not be used as evidence.</div>`)
+	}
+	if run.Inconclusive {
+		f.WriteString(`<div style="background:#78350f;color:#fff;padding:1em;border-radius:4px;margin:1em 0;font-weight:bold;text-align:center">⚠ INCONCLUSIVE — the pipeline positive control (canary) did not fire; coverage is not valid.<br><span style="font-weight:normal">` + html.EscapeString(run.CanaryDetail) + `</span></div>`)
+	}
+
+	f.WriteString(`<div class="summary">`)
 
 	for _, v := range []model.Verdict{model.Detected, model.Missed, model.NoTelemetry, model.Inconclusive, model.Errored} {
 		if n, ok := counts[v]; ok && n > 0 {
@@ -139,9 +149,15 @@ func (r NavigatorLayerReporter) Write(run model.CampaignResult) error {
 		model.Errored:  {"#e91e63", 0},
 	}
 
+	desc := fmt.Sprintf("Detection coverage from campaign run at %s", run.StartedAt.Format(time.RFC3339))
+	if run.Synthetic {
+		desc = "SYNTHETIC / DRY-RUN — NOT real telemetry. " + desc
+	} else if run.Inconclusive {
+		desc = "INCONCLUSIVE — canary did not fire, coverage not valid. " + desc
+	}
 	layer := navLayer{
 		Name:        "Purple Loop Coverage",
-		Description: fmt.Sprintf("Detection coverage from campaign run at %s", run.StartedAt.Format(time.RFC3339)),
+		Description: desc,
 		Domain:      "mitre-enterprise",
 		Versions:    map[string]string{"layer": "4.5", "attack": "16"},
 	}

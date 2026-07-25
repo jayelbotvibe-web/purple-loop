@@ -52,10 +52,13 @@ type RunResult struct {
 	Stderr     string    `json:"-"`
 }
 
-// Window returns the execution's time span, padded so the SIEM has room to
-// have ingested the resulting events.
+// Window returns the execution's time span, padded only on the END so the SIEM
+// has room to ingest the resulting events. The start is NOT padded backward:
+// widening it into the past can capture an earlier run's matching events and
+// credit them to this execution (false DETECTED). A small epsilon absorbs
+// minor clock skew without reaching a prior test.
 func (r RunResult) Window(pad time.Duration) TimeWindow {
-	return TimeWindow{Start: r.StartedAt.Add(-pad), End: r.FinishedAt.Add(pad)}
+	return TimeWindow{Start: r.StartedAt.Add(-2 * time.Second), End: r.FinishedAt.Add(pad)}
 }
 
 // Event is one normalised telemetry record pulled from the SIEM.
@@ -94,9 +97,20 @@ type ProofChain struct {
 }
 
 // CampaignResult aggregates every technique validated in one run.
+//
+// The three trust fields enforce the hard contracts in code (not just docs):
+//   - Synthetic: any pipeline stage was dry/synthetic, so the chains are NOT
+//     real telemetry and must never be presented or published as evidence.
+//   - CanaryHealthy / Inconclusive: the pipeline positive control. On a real
+//     run, if the canary did not fire the run is INCONCLUSIVE and its coverage
+//     must not be treated as valid.
 type CampaignResult struct {
-	StartedAt time.Time    `json:"started_at"`
-	Chains    []ProofChain `json:"chains"`
+	StartedAt     time.Time    `json:"started_at"`
+	Chains        []ProofChain `json:"chains"`
+	Synthetic     bool         `json:"synthetic"`               // dry/synthetic pipeline — not real evidence
+	CanaryHealthy bool         `json:"canary_healthy"`          // positive control fired (real runs)
+	Inconclusive  bool         `json:"inconclusive"`            // canary failed on a real run → coverage invalid
+	CanaryDetail  string       `json:"canary_detail,omitempty"` // why the canary failed
 }
 
 // ---- interfaces: the swappable seams of the system ----
