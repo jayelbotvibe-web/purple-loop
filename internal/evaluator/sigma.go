@@ -48,6 +48,12 @@ func (e RuleMatcherEvaluator) Evaluate(rule model.SigmaRule, events []model.Even
 		return model.Errored, nil, fmt.Errorf("parse rule %s: %w", rule.Path, err)
 	}
 
+	// A rule using a feature we cannot faithfully evaluate must NOT be scored as
+	// a clean MISS — that silently under-reports coverage. Report INCONCLUSIVE.
+	if parsedRule.Unsupported != "" {
+		return model.Inconclusive, nil, nil
+	}
+
 	// For process-creation rules, only genuine process-creation telemetry can
 	// justify a verdict. Command-output/metadata scrapes (full_log, decoder
 	// name) are tagged low fidelity by the normalizer and are excluded here, so

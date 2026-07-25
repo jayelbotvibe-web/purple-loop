@@ -52,21 +52,45 @@ func (Normalizer) Normalize(raw json.RawMessage) map[string]string {
 		highFidelity = true
 	}
 
-	// Try Windows Sysmon / EventChannel paths
+	// Try Windows Sysmon / EventChannel paths.
+	//
+	// CRITICAL: only genuine PROCESS-CREATION events (Sysmon EventID 1, Security
+	// 4688) may be tagged high fidelity. Other Windows events (network
+	// connection=3, account enumeration=4798, handle=4656, …) also carry a
+	// process name (callerProcessName/processName) but are NOT proof a process
+	// was created. Tagging them as process telemetry credited a process-creation
+	// detection off an enumeration/network event — a false DETECTED.
 	if data, ok := event["data"].(map[string]any); ok {
 		if win, ok := data["win"].(map[string]any); ok {
 			if ed, ok := win["eventdata"].(map[string]any); ok {
-				// Sysmon process creation (sysmon 1)
-				getString(ed, "image", &out, "Image")
-				getString(ed, "parentImage", &out, "ParentImage")
-				getString(ed, "commandLine", &out, "CommandLine")
-				getString(ed, "user", &out, "User")
-				getString(ed, "parentUser", &out, "User")
-				// Security Audit fallbacks
-				getString(ed, "callerProcessName", &out, "Image")
-				getString(ed, "subjectUserName", &out, "User")
-				getString(ed, "processName", &out, "Image")
-				highFidelity = true
+				eventID := winEventID(win)
+				if eventID != "" {
+					out["EventID"] = eventID
+				}
+				if isProcessCreation(ed, eventID) {
+					// Real process creation — its fields are evidence.
+					getString(ed, "image", &out, "Image")
+					getString(ed, "parentImage", &out, "ParentImage")
+					getString(ed, "commandLine", &out, "CommandLine")
+					getString(ed, "user", &out, "User")
+					getString(ed, "parentUser", &out, "User")
+					getString(ed, "newProcessName", &out, "Image")   // Security 4688
+					getString(ed, "parentProcessName", &out, "ParentImage")
+					getString(ed, "subjectUserName", &out, "User")
+					highFidelity = true
+				} else {
+					// Non-creation event: extract for context only, LOW fidelity,
+					// so process_creation rules can never match it.
+					getString(ed, "image", &out, "Image")
+					getString(ed, "callerProcessName", &out, "Image")
+					getString(ed, "processName", &out, "Image")
+					getString(ed, "commandLine", &out, "CommandLine")
+					getString(ed, "user", &out, "User")
+					getString(ed, "subjectUserName", &out, "User")
+					if out["Image"] != "" || out["CommandLine"] != "" {
+						lowFidelity = true
+					}
+				}
 			}
 		}
 	}
@@ -133,6 +157,39 @@ func (Normalizer) Normalize(raw json.RawMessage) map[string]string {
 	}
 
 	return out
+}
+
+// isProcessCreation reports whether a Windows eventdata block is genuine
+// process-creation telemetry: Sysmon EventID 1 / Security 4688, or — when the
+// structured EventID is absent (as in some captured events) — the
+// process-creation field signature (a command line plus an image/new-process
+// name). Enumeration/network events (callerProcessName only, no command line)
+// are correctly excluded.
+func isProcessCreation(ed map[string]any, eventID string) bool {
+	if eventID == "1" || eventID == "4688" {
+		return true
+	}
+	return nonEmptyStr(ed, "commandLine") && (nonEmptyStr(ed, "image") || nonEmptyStr(ed, "newProcessName"))
+}
+
+func nonEmptyStr(m map[string]any, key string) bool {
+	s, ok := m[key].(string)
+	return ok && s != ""
+}
+
+// winEventID extracts data.win.system.eventID (string or numeric) or "".
+func winEventID(win map[string]any) string {
+	sys, ok := win["system"].(map[string]any)
+	if !ok {
+		return ""
+	}
+	switch v := sys["eventID"].(type) {
+	case string:
+		return v
+	case float64:
+		return fmt.Sprintf("%d", int(v))
+	}
+	return ""
 }
 
 func getString(m map[string]any, key string, out *map[string]string, target string) {

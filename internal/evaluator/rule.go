@@ -12,11 +12,12 @@ import (
 
 // Rule represents a parsed Sigma rule's detection block.
 type Rule struct {
-	Path       string
-	Title      string
-	Category   string              // logsource.category, e.g. "process_creation"
-	Detections map[string]FieldMap // search-identifier → field conditions
-	Condition  Expr                // parsed condition tree
+	Path        string
+	Title       string
+	Category    string              // logsource.category, e.g. "process_creation"
+	Detections  map[string]FieldMap // search-identifier → field conditions
+	Condition   Expr                // parsed condition tree
+	Unsupported string              // non-empty if the rule uses a feature we can't evaluate
 }
 
 // FieldMap is a search-identifier's field→value mapping with modifiers.
@@ -26,6 +27,16 @@ type FieldMap map[string]FieldEntry
 type FieldEntry struct {
 	Values    []string // list of values to match against
 	Modifiers []string // e.g. "contains", "startswith", "endswith", "all"
+	MatchNull bool     // Sigma `Field: null` — matches when the field is absent/empty
+}
+
+// supportedModifiers is the set of value modifiers this engine evaluates
+// correctly. Any other modifier (base64, cidr, windash, fieldref, …) means the
+// rule cannot be faithfully evaluated; such a rule is reported INCONCLUSIVE
+// rather than silently scored as a clean MISS.
+var supportedModifiers = map[string]bool{
+	"all": true, "endswith": true, "startswith": true, "contains": true,
+	"re": true, "lt": true, "lte": true, "gt": true, "gte": true,
 }
 
 // Expr is a node in the condition expression tree.
@@ -97,6 +108,18 @@ func (RuleParser) Parse(path string) (*Rule, error) {
 		rule.Detections[name] = fm
 	}
 
+	// Flag any unsupported modifier so the evaluator can report INCONCLUSIVE
+	// instead of a misleading MISS.
+	for _, fm := range rule.Detections {
+		for _, entry := range fm {
+			for _, m := range entry.Modifiers {
+				if !supportedModifiers[m] {
+					rule.Unsupported = "unsupported Sigma modifier: " + m
+				}
+			}
+		}
+	}
+
 	// Parse condition expression
 	cond, err := parseCondition(raw.Detection.Condition)
 	if err != nil {
@@ -156,6 +179,8 @@ func parseFieldMap(val any) (FieldMap, error) {
 		// Parse value(s). Scalars may be strings, numbers, or booleans
 		// (e.g. `EventID: 4688`, `Count|gt: 5`); coerce each to its string form.
 		switch vv := v.(type) {
+		case nil:
+			entry.MatchNull = true // Sigma `Field: null` — match when absent/empty
 		case string:
 			entry.Values = []string{vv}
 		case []any:
@@ -259,8 +284,10 @@ func (p *condParser) parseAnd() (Expr, error) {
 
 func (p *condParser) parseNot() (Expr, error) {
 	p.skip()
-	if strings.HasPrefix(p.s[p.pos:], "not ") {
-		p.pos += 4
+	rest := p.s[p.pos:]
+	// Accept "not " and also "not(" (no space before the paren).
+	if strings.HasPrefix(rest, "not ") || strings.HasPrefix(rest, "not\t") || strings.HasPrefix(rest, "not(") {
+		p.pos += 3 // consume "not"; the recursive skip() handles the space or "("
 		child, err := p.parseNot()
 		if err != nil {
 			return nil, err
@@ -333,43 +360,33 @@ func (p *condParser) parseOneOf() (Expr, error) {
 	}
 	// Read identifiers
 	var names []string
-	for {
-		p.skip()
-		if strings.HasPrefix(p.s[p.pos:], "them") {
-			p.pos += 4
-			// "1 of them" — we don't know the list, pass through
-			break
-		}
-		if strings.HasPrefix(p.s[p.pos:], "(") {
-			// "1 of (a, b, c, ...)"
-			p.pos++ // skip (
-			for {
-				id, err := p.parseIdent()
-				if err != nil {
-					return nil, err
-				}
-				if id != nil {
-					names = append(names, id.(IdentExpr).Name)
-				}
-				p.skip()
-				if p.pos < len(p.s) && p.s[p.pos] == ',' {
-					p.pos++
-					continue
-				}
-				if p.pos < len(p.s) && p.s[p.pos] == ')' {
-					p.pos++
-					break
-				}
-				break
+	p.skip()
+	switch {
+	case strings.HasPrefix(p.s[p.pos:], "them"):
+		p.pos += 4 // "1 of them" — Names stays empty; the matcher expands it
+	case p.pos < len(p.s) && p.s[p.pos] == '(':
+		p.pos++ // skip (
+		for {
+			if name := p.readAggIdent(); name != "" {
+				names = append(names, name)
+			}
+			p.skip()
+			if p.pos < len(p.s) && p.s[p.pos] == ',' {
+				p.pos++
+				continue
+			}
+			if p.pos < len(p.s) && p.s[p.pos] == ')' {
+				p.pos++
 			}
 			break
 		}
-		// "1 of them" without parens — just "them"
-		if strings.HasPrefix(p.s[p.pos:], "them") {
-			p.pos += 4
-			break
+	default:
+		// Bare identifier or glob pattern, e.g. "1 of selection_*". Consuming it
+		// here (rather than stopping at '*') is what lets the following
+		// "and not filter" parse instead of being silently dropped.
+		if name := p.readAggIdent(); name != "" {
+			names = append(names, name)
 		}
-		break
 	}
 	return OneOfExpr{N: n, Names: names}, nil
 }
@@ -383,12 +400,8 @@ func (p *condParser) parseAllOf() (Expr, error) {
 		return AllOfExpr{Names: names}, nil
 	}
 	for {
-		id, err := p.parseIdent()
-		if err != nil {
-			return nil, err
-		}
-		if id != nil {
-			names = append(names, id.(IdentExpr).Name)
+		if name := p.readAggIdent(); name != "" {
+			names = append(names, name)
 		}
 		p.skip()
 		if p.pos < len(p.s) && p.s[p.pos] == ',' {
@@ -402,4 +415,15 @@ func (p *condParser) parseAllOf() (Expr, error) {
 
 func isIdent(c byte) bool {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'
+}
+
+// readAggIdent reads an aggregate operand identifier, allowing the `*`/`?`
+// glob characters so patterns like "selection_*" are captured whole.
+func (p *condParser) readAggIdent() string {
+	p.skip()
+	start := p.pos
+	for p.pos < len(p.s) && (isIdent(p.s[p.pos]) || p.s[p.pos] == '*' || p.s[p.pos] == '?') {
+		p.pos++
+	}
+	return p.s[start:p.pos]
 }

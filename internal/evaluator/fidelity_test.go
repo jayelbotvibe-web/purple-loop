@@ -55,7 +55,9 @@ func TestNormalizer_FidelityTagging(t *testing.T) {
 		raw  string
 		want string
 	}{
-		{"windows eventdata", `{"data":{"win":{"eventdata":{"image":"C:\\a.exe"}}}}`, FidelityProcess},
+		{"windows process creation", `{"data":{"win":{"eventdata":{"image":"C:\\a.exe","commandLine":"a.exe"}}}}`, FidelityProcess},
+		{"windows sysmon1 by eventID", `{"data":{"win":{"system":{"eventID":"1"},"eventdata":{"image":"C:\\a.exe"}}}}`, FidelityProcess},
+		{"windows non-creation enumeration (4798)", `{"data":{"win":{"eventdata":{"callerProcessName":"C:\\net1.exe","subjectUserName":"SYSTEM"}}}}`, FidelityLog},
 		{"auditd execve", `{"data":{"audit":{"execve":{"a0":"id"}}}}`, FidelityProcess},
 		{"top-level synthetic", `{"Image":"/usr/bin/id","CommandLine":"id"}`, FidelityProcess},
 		{"full_log scrape", `{"full_log":"ossec: output: 'id': uid=0"}`, FidelityLog},
