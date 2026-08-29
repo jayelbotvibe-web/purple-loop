@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/id","ParentImage":"/bin/sh","CommandLine":"id"}
+{"Image": "/usr/bin/ss", "ParentImage": "/bin/bash", "CommandLine": "ss -antp", "User": "root"}
+{"Image": "/usr/bin/lsof", "ParentImage": "/bin/bash", "CommandLine": "lsof -i -nP", "User": "root"}

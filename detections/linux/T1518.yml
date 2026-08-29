@@ -1,23 +1,38 @@
-title: Discovery - T1518
-id: 4c1736b3-0000-0000-0000-000000000000
+title: Software Discovery (Linux)
+id: a1c0f2e4-0009-4b10-9c21-5f0a15180010
 status: experimental
-description: Detects T1518 discovery activity.
+description: Detects installed-software enumeration, as emitted by the lab's T1518-1 override (dpkg -l / rpm -qa / apk info). Upstream Atomic Red Team ships no Linux test for this technique.
 references:
   - https://attack.mitre.org/techniques/T1518/
 author: purple-loop
-date: 2026/07/04
+date: 2026/08/29
 logsource:
   product: linux
   category: process_creation
 detection:
-  selection:
+  dpkg_list:
+    Image|endswith: '/dpkg'
+    CommandLine|contains:
+      - '-l'
+      - '--list'
+      - '--get-selections'
+  rpm_query:
+    Image|endswith: '/rpm'
+    CommandLine|contains:
+      - '-qa'
+      - '--query'
+  other_pkg:
     Image|endswith:
-      - '/id'
-      - '/whoami'
-  condition: selection
+      - '/apk'
+      - '/dpkg-query'
+    CommandLine|contains:
+      - 'info'
+      - '-l'
+  condition: dpkg_list or rpm_query or other_pkg
 falsepositives:
-  - Legitimate administrative scripts
+  - Vulnerability scanners and inventory agents
+  - Package managers during a normal install or upgrade
 level: low
 tags:
   - attack.discovery
-  - attack.T1518
+  - attack.t1518

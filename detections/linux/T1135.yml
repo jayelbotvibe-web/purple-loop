@@ -1,23 +1,36 @@
-title: Discovery - T1135
-id: 59fe172d-0000-0000-0000-000000000000
+title: Network Share Discovery (Linux)
+id: a1c0f2e4-0008-4b10-9c21-5f0a11350010
 status: experimental
-description: Detects T1135 discovery activity.
+description: Detects network share enumeration, as emitted by the lab's T1135-1 override (reads of /proc/mounts filtered for network filesystems, showmount, smbclient) and by upstream smbstatus.
 references:
   - https://attack.mitre.org/techniques/T1135/
 author: purple-loop
-date: 2026/07/04
+date: 2026/08/29
 logsource:
   product: linux
   category: process_creation
 detection:
-  selection:
+  smb_tools:
     Image|endswith:
-      - '/id'
-      - '/whoami'
-  condition: selection
+      - '/smbclient'
+      - '/smbstatus'
+      - '/showmount'
+      - '/nmblookup'
+  mount_table:
+    CommandLine|contains:
+      - '/proc/mounts'
+      - '/etc/fstab'
+  network_mount:
+    Image|endswith: '/mount'
+    CommandLine|contains:
+      - 'cifs'
+      - 'nfs'
+      - 'smb'
+  condition: smb_tools or mount_table or network_mount
 falsepositives:
-  - Legitimate administrative scripts
-level: low
+  - Storage agents reading /proc/mounts or /etc/fstab
+  - Backup tooling enumerating network filesystems
+level: medium
 tags:
   - attack.discovery
-  - attack.T1135
+  - attack.t1135

@@ -74,7 +74,7 @@ func (Normalizer) Normalize(raw json.RawMessage) map[string]string {
 					getString(ed, "commandLine", &out, "CommandLine")
 					getString(ed, "user", &out, "User")
 					getString(ed, "parentUser", &out, "User")
-					getString(ed, "newProcessName", &out, "Image")   // Security 4688
+					getString(ed, "newProcessName", &out, "Image") // Security 4688
 					getString(ed, "parentProcessName", &out, "ParentImage")
 					getString(ed, "subjectUserName", &out, "User")
 					highFidelity = true
@@ -90,6 +90,38 @@ func (Normalizer) Normalize(raw json.RawMessage) map[string]string {
 					if out["Image"] != "" || out["CommandLine"] != "" {
 						lowFidelity = true
 					}
+				}
+			}
+		}
+	}
+
+	// Try Linux-Sysmon (eBPF) paths.
+	//
+	// Sysmon for Linux emits the same process-creation semantics as its Windows
+	// counterpart — EventID 1 with Image, CommandLine, ParentImage, User — but it
+	// is NOT an eventchannel event, so it gets its own path rather than being
+	// smuggled through data.win. The same gate applies: only EventID 1 is
+	// process creation, and only process creation is high fidelity.
+	if data, ok := event["data"].(map[string]any); ok {
+		if sm, ok := data["sysmon"].(map[string]any); ok {
+			eventID := anyToString(sm["eventID"])
+			if eventID != "" {
+				out["EventID"] = eventID
+			}
+			if eventID == "1" {
+				getString(sm, "image", &out, "Image")
+				getString(sm, "parentImage", &out, "ParentImage")
+				getString(sm, "commandLine", &out, "CommandLine")
+				getString(sm, "user", &out, "User")
+				highFidelity = true
+			} else {
+				// Any other Sysmon event (network, file, …) carries a process
+				// name without being proof a process was created.
+				getString(sm, "image", &out, "Image")
+				getString(sm, "commandLine", &out, "CommandLine")
+				getString(sm, "user", &out, "User")
+				if out["Image"] != "" || out["CommandLine"] != "" {
+					lowFidelity = true
 				}
 			}
 		}
@@ -175,6 +207,17 @@ func isProcessCreation(ed map[string]any, eventID string) bool {
 func nonEmptyStr(m map[string]any, key string) bool {
 	s, ok := m[key].(string)
 	return ok && s != ""
+}
+
+// anyToString renders a JSON value that may be a string or a number.
+func anyToString(v any) string {
+	switch t := v.(type) {
+	case string:
+		return t
+	case float64:
+		return fmt.Sprintf("%d", int(t))
+	}
+	return ""
 }
 
 // winEventID extracts data.win.system.eventID (string or numeric) or "".

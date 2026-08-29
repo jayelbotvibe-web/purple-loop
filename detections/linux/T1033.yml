@@ -1,23 +1,30 @@
-title: Discovery - T1033
-id: 641f50c0-0000-0000-0000-000000000000
+title: System Owner and User Discovery (Linux)
+id: a1c0f2e4-0003-4b10-9c21-5f0a10330010
 status: experimental
-description: Detects T1033 discovery activity.
+description: Detects enumeration of the current and logged-on users, as emitted by atomic T1033-2 (users; w; who).
 references:
   - https://attack.mitre.org/techniques/T1033/
 author: purple-loop
-date: 2026/07/04
+date: 2026/08/29
 logsource:
   product: linux
   category: process_creation
 detection:
-  selection:
+  session_enum:
     Image|endswith:
-      - '/id'
+      - '/users'
+      - '/who'
+      - '/w'
+      - '/last'
+  identity:
+    Image|endswith:
       - '/whoami'
-  condition: selection
+      - '/logname'
+  condition: session_enum or identity
 falsepositives:
-  - Legitimate administrative scripts
+  - Interactive administrators checking who is logged in
+  - Monitoring agents sampling session counts
 level: low
 tags:
   - attack.discovery
-  - attack.T1033
+  - attack.t1033

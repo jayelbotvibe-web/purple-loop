@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/id","ParentImage":"/bin/sh","CommandLine":"id"}
+{"Image": "/usr/bin/dpkg", "ParentImage": "/bin/sh", "CommandLine": "dpkg -l", "User": "root"}
+{"Image": "/usr/bin/rpm", "ParentImage": "/bin/sh", "CommandLine": "rpm -qa", "User": "root"}

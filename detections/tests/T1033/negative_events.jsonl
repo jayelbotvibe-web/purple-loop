@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/apt","ParentImage":"/bin/bash","CommandLine":"apt update"}
+{"Image": "/usr/bin/uname", "ParentImage": "/bin/sh", "CommandLine": "uname -a", "User": "root"}
+{"Image": "/usr/bin/wget", "ParentImage": "/bin/bash", "CommandLine": "wget http://mirror/pkg.deb", "User": "root"}

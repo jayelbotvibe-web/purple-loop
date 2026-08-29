@@ -1,5 +1,5 @@
 title: Windows Process Creation
-id: win-proc-create-001
+id: a1c0f2e4-0010-4b10-9c21-5f0a10590030
 status: experimental
 description: Detects Windows process creation via Sysmon Event ID 1.
 references:

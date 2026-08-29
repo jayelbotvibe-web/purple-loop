@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/apt","ParentImage":"/bin/bash","CommandLine":"apt update"}
+{"Image": "/usr/bin/cat", "ParentImage": "/bin/sh", "CommandLine": "cat /etc/passwd", "User": "root"}
+{"Image": "/usr/bin/id", "ParentImage": "/bin/sh", "CommandLine": "id", "User": "root"}

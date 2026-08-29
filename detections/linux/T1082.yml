@@ -1,23 +1,33 @@
-title: Discovery - T1082
-id: 422ee334-0000-0000-0000-000000000000
+title: System Information Discovery (Linux)
+id: a1c0f2e4-0002-4b10-9c21-5f0a10820010
 status: experimental
-description: Detects T1082 discovery activity.
+description: Detects host and OS fingerprinting, as emitted by atomic T1082-3 (uname -a plus reads of the release files) and by kernel-module listing.
 references:
   - https://attack.mitre.org/techniques/T1082/
 author: purple-loop
-date: 2026/07/04
+date: 2026/08/29
 logsource:
   product: linux
   category: process_creation
 detection:
-  selection:
+  uname:
+    Image|endswith: '/uname'
+  release_files:
+    CommandLine|contains:
+      - '/etc/os-release'
+      - '/etc/lsb-release'
+      - '/etc/redhat-release'
+      - '/etc/issue'
+  host_fingerprint:
     Image|endswith:
-      - '/id'
-      - '/whoami'
-  condition: selection
+      - '/hostnamectl'
+      - '/lsmod'
+      - '/dmidecode'
+  condition: uname or release_files or host_fingerprint
 falsepositives:
-  - Legitimate administrative scripts
+  - Package managers and installers fingerprinting the distribution
+  - Configuration-management agents collecting host facts
 level: low
 tags:
   - attack.discovery
-  - attack.T1082
+  - attack.t1082
