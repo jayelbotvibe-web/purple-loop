@@ -1,0 +1,30 @@
+# Lab targets.
+#
+# Before this file, `run` hardcoded a single Linux target (victim01 / Docker /
+# detections/linux) and the Windows executor was reachable ONLY from the
+# standalone `canary` subcommand — which also hardcoded an IP. The v1.0
+# "cross-platform coverage" claim could not be exercised through `run` at all.
+#
+# A technique is dispatched to the target whose `kind` matches the `platform`
+# its rule-map entry declares. The canary runs per platform actually in use, so
+# a campaign spanning both hosts proves both pipelines before trusting either.
+
+targets:
+  - name: victim01
+    kind: linux
+    executor: docker
+    container: purpleloop-victim
+    rules_dir: detections/linux
+
+  - name: windows-vm
+    kind: windows
+    executor: ssh
+    rules_dir: detections/windows
+    # Host and credentials come from the environment, never from source:
+    #   WINDOWS_SSH_HOST, WINDOWS_SSH_USER, WINDOWS_SSH_PASS
+    # (The IP was previously hardcoded at cmd/purpleloop/main.go:314.)
+    ssh_host_env: WINDOWS_SSH_HOST
+    ssh_user_env: WINDOWS_SSH_USER
+    ssh_pass_env: WINDOWS_SSH_PASS
+    default_host: 192.168.88.13
+    default_user: windows-vm

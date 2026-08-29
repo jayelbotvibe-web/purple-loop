@@ -1,0 +1,12 @@
+# Windows campaign. Exercises the Windows executor, the Windows target from
+# lab/targets.yml and detections/windows — the cross-platform path that was
+# previously unreachable from `run` (SSHExecutor existed only inside the
+# standalone `canary` subcommand).
+#
+# Requires a Windows victim reachable over SSH:
+#   export WINDOWS_SSH_HOST=... WINDOWS_SSH_USER=... WINDOWS_SSH_PASS=...
+name: windows-discovery
+description: Windows command-shell execution against the Sysmon-instrumented victim
+techniques:
+  - technique_id: T1059.003
+    atomic_ids: [T1059.003-2]

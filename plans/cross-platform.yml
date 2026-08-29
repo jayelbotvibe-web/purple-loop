@@ -1,0 +1,13 @@
+# A campaign spanning both lab hosts in one run. Each technique is dispatched to
+# the target matching the platform its rule-map entry declares, and the pipeline
+# canary runs once per platform in use — a healthy Linux canary says nothing
+# about whether Windows telemetry is flowing.
+name: cross-platform
+description: Linux discovery plus Windows command-shell execution in a single run
+techniques:
+  - technique_id: T1082
+    atomic_ids: [T1082-3]
+  - technique_id: T1033
+    atomic_ids: [T1033-2]
+  - technique_id: T1059.003
+    atomic_ids: [T1059.003-2]
