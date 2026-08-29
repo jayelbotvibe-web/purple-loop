@@ -1,0 +1,116 @@
+{
+  "_note": "Single source of truth for technique -> atomic -> expected detections. Replaces the technique->rule map that was hardcoded in cmd/purpleloop/main.go. 'expected_rules' lists every rule that SHOULD fire for this technique; a technique is DETECTED when any of them matches. 'platform' is the lab target kind the atomic runs on.",
+  "techniques": {
+    "T1059.004": {
+      "atomics": [
+        "T1059.004-1"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/proc_creation_susp_shell.yml"
+      ]
+    },
+    "T1087.001": {
+      "atomics": [
+        "T1087.001-1"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1087.001.yml"
+      ]
+    },
+    "T1082": {
+      "atomics": [
+        "T1082-3"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1082.yml"
+      ]
+    },
+    "T1033": {
+      "atomics": [
+        "T1033-2"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1033.yml"
+      ]
+    },
+    "T1007": {
+      "atomics": [
+        "T1007-3"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1007.yml"
+      ]
+    },
+    "T1016": {
+      "atomics": [
+        "T1016-3"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1016.yml"
+      ]
+    },
+    "T1049": {
+      "atomics": [
+        "T1049-4"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1049.yml"
+      ]
+    },
+    "T1069.001": {
+      "atomics": [
+        "T1069.001-1"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1069.001.yml"
+      ]
+    },
+    "T1069": {
+      "atomics": [
+        "T1069.001-1"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1069.001.yml"
+      ]
+    },
+    "T1135": {
+      "atomics": [
+        "T1135-1"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1135.yml"
+      ]
+    },
+    "T1518": {
+      "atomics": [
+        "T1518-1"
+      ],
+      "platform": "linux",
+      "expected_rules": [
+        "detections/linux/T1518.yml"
+      ]
+    },
+    "T1059.003": {
+      "atomics": [
+        "T1059.003-2"
+      ],
+      "platform": "windows",
+      "expected_rules": [
+        "detections/windows/win_proc_create.yml"
+      ]
+    }
+  },
+  "untested_rules": {
+    "detections/canary/pipeline_canary.yml": "not_a_detection \u2014 pipeline positive control, exercised by the canary gate on every run"
+  }
+}
