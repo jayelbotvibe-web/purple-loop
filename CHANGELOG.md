@@ -2,6 +2,140 @@
 All notable changes to this project follow Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
+### Fixed (2026-08 review — the engine now executes the atomics it claims to)
+- **Every technique ran the same hardcoded `id; whoami`.** `atomic_ids` was parsed from plan
+  YAML, carried through emulation stages and the arbiter feed and written into the proof
+  chain — but never resolved to a command. A ten-technique campaign ran one command ten times
+  and labelled the results T1082, T1033, T1518… so every verdict but `T1059.004`'s was about a
+  command nobody asked for. The README's claim that Execute "runs Atomic Red Team tests" was
+  not true of the code. New `internal/atomic` package resolves each `atomic_id` against the
+  pinned ART tree; resolution is strict (`override → vendored ART → error`) and there is no
+  default command.
+- **Five of ten techniques in `plans/discovery.yml` named Windows atomics** while the campaign
+  targets a Linux victim (`T1082-1`, `T1033-1`, `T1007-1`, `T1016-1`, `T1049-1` are all
+  `command_prompt` tests). Invisible while everything ran `id; whoami`. Plans and emulation
+  chains now name the correct Linux tests, and a platform mismatch is a loud `ERROR`.
+- **Containment breach in the pinned atomics.** `T1059.004-1` writes a script that pings
+  `8.8.8.8` — traffic leaving the isolated lab network, against the project's own rule. Its
+  `host` input is pinned to loopback via an override that keeps the upstream command.
+- **`ERROR` was counted as `missed`** in the HTML headline, and `SKIPPED_PREREQ`/`ERROR` were
+  inside the dashboard's coverage denominator. A harness failure is not a detection gap;
+  coverage is now measured only over techniques that actually exercised a detection.
+- **Atomic Red Team was recorded, not pinned.** `lab-fetch.sh` cloned HEAD then overwrote the
+  pin file with whatever it got, so a re-clone could silently change every command the engine
+  runs. `scripts/fetch-atomics.sh` checks out the recorded commit and verifies HEAD matches.
+- Dashboard no longer hardcodes `campaign: "discovery"` and `build: "v1.3.0"`; both come from
+  the run. `gap.why` is populated from the verdict's note instead of always being empty.
+- `make help` printed "Makefile" in place of every target name (`grep` needed `-h`).
+
+### Fixed (2026-08 — the detections had the same defect as the engine)
+- **Nine of the ten Linux Sigma rules were the identical rule.** Every one matched
+  `Image endswith /id or /whoami`, differing only in title, because they were written against
+  an engine that executed `id; whoami` for every technique. All nine shared one byte-identical
+  positive fixture, so the "10 rules, 20 fixtures, CI enforced" detection-as-code claim was
+  testing one rule nine times against one event. Each technique now has a detection for what
+  its own atomic actually does, with distinct fixtures whose negatives include a *neighbouring*
+  technique's activity — so a rule that is secretly a copy fails its own negative test.
+- **Two false positives found by the new precision gate and fixed**: `T1087.001` fired on
+  `getent hosts localhost` (a DNS lookup, not account enumeration) and `T1135` fired on a bare
+  `mount`. Both rules keyed on a tool name rather than what the tool was being asked to do.
+- **`win_proc_create.yml` had a non-UUID identifier** (`win-proc-create-001`), a Sigma spec
+  violation the hand-rolled Go parser accepted silently. Found by adding `sigma check`.
+- **The Windows path was unreachable from `run`.** `runTasks` hardcoded a Linux target, rules
+  directory and executor; `SSHExecutor` and the Windows rule existed only inside the standalone
+  `canary` subcommand, which also hardcoded the IP `192.168.88.13`. Targets are now declared in
+  `lab/targets.yml`, techniques are dispatched by the platform their rule-map entry names, and
+  the canary runs once per platform in use — a healthy Linux canary says nothing about whether
+  Windows telemetry is flowing.
+- **`history.json` stored only a coverage percentage**, so no run could be compared with
+  another. It now carries per-technique verdicts, which is what `purpleloop diff` needs.
+
+### Fixed (2026-08 — lab reproducibility)
+- **Archive logging did not survive a restart.** The collector reads
+  `archives.json`, which the manager only writes when `<logall_json>` is `yes`; the image ships
+  it as `no`. It had been enabled by hand *inside the running container*, which cannot work:
+  the manager bind-mounts `/wazuh-config-mount/etc/ossec.conf` from the host and its entrypoint
+  copies that over `/var/ossec/etc/ossec.conf` on every start, so the edit is wiped by the very
+  restart needed to apply it. The stack then comes up healthy, the agent enrolls, and every
+  technique reports `NO_TELEMETRY` — which reads as a detection problem and is not one.
+  `scripts/enable-archives.sh` (`make archives`) patches the host-side source of the config
+  mount and then *verifies* the setting is live inside the container.
+
+### Fixed (2026-08 — victim telemetry honesty)
+- **The victim entrypoint hid a total telemetry failure.** It ran
+  `service auditd start || auditd || true`, so every failure was swallowed: the container came
+  up looking healthy with no process-creation source at all, and the pipeline then reported
+  `NO_TELEMETRY` for every technique — which reads as a detection problem and is not one. The
+  entrypoint now probes the kernel audit subsystem, loads `execve` rules when it is usable, and
+  otherwise says loudly that this victim has no process-creation telemetry and that runs will
+  be `INCONCLUSIVE` as a result.
+- **`--settle-timeout` / `--settle-poll` are configurable.** The 60s default is below the
+  victim's 360s `<localfile>` collection interval, so even command-output telemetry could not
+  land inside a technique's window. Documented on the flag itself.
+- Verified and documented in `docs/PITFALLS.md` what actually blocks Linux process-creation
+  telemetry: auditd is impossible on a host whose kernel exposes no audit sysctls (reproduced
+  with `--privileged --network host`), and Sysmon for Linux only runs under systemd (its
+  `-service` mode still shells out to `systemctl`). Closing the gap needs a systemd-based
+  victim — a deliberate change to the lab's security posture, not a config tweak.
+
+### Added (2026-08 — Linux-Sysmon readiness)
+- Normalizer handles a `data.sysmon` path: Linux-Sysmon `EventID 1` is treated as genuine
+  process creation, any other Sysmon event ID is low fidelity and can never satisfy a
+  `process_creation` rule. Events are deliberately not routed through `data.win.*`, which is
+  Wazuh's Windows eventchannel convention. Tested in `internal/evaluator/sysmon_linux_test.go`,
+  including that a non-creation event with identical fields does not match.
+- Documented in `docs/PITFALLS.md` why the Linux victim is a container without process-creation
+  telemetry rather than a container running Sysmon: Sysmon for Linux works, but its eBPF is
+  kernel-global and the event carries no container identity, so scoping it either leaks host
+  processes (PID reuse) or drops the atomics' own short-lived ones. Both manufacture false
+  verdicts. The fix is a Linux VM, as the Windows victim already is.
+
+### Added (2026-08)
+- `purpleloop precision` and `internal/precision`: measures the false-positive rate against a
+  benign administrator workload (`emulation/benign-baseline.yml`, 26 commands across 7
+  categories) including adjacent cases — benign uses of the binaries the rules watch. Exits
+  non-zero on any false positive, so it gates CI.
+- `purpleloop replay` and `internal/capture`: every real run writes
+  `reports/runs/<id>/events.jsonl`; replay re-runs the real evaluator over it with no lab. CI
+  replays `testdata/sample-run` on every push, so rule edits are checked against telemetry
+  rather than only against fixtures written to match them. The capture writer refuses synthetic
+  runs, whose "telemetry" is fabricated.
+- `purpleloop diff <a> <b> [--fail-on-regression]`: names the technique that regressed
+  (`T1082 DETECTED -> MISSED`) instead of only moving a percentage. Verdicts that mean "never
+  exercised" share a rank, so ERROR -> SKIPPED_PREREQ is a change, not a regression.
+- `collector.Settler`: polls until an expected rule matches or ingestion settles, replacing the
+  fixed `time.Sleep(10s)` per technique and its 10-minute query window.
+- Attribution labels on every verdict (`window_and_host_scoped`, `window_scoped`,
+  `window_overlap`, `unscoped`) and `detect_latency_ms`. Overlap is computed campaign-wide once
+  every window is known. This changes no verdict; it states the quality of the evidence behind
+  one.
+- `mappings/attack_rule_map.json` with `expected_rules[]` — a technique is DETECTED when ANY
+  expected rule matches. Replaces the technique->rule map hardcoded in `cmd/purpleloop`.
+- `untested_rules` accounting: every rule is mapped to a technique or declared untested with a
+  reason, enforced by a CI lint, and reported per run.
+- `collection_gaps` in the dashboard output, naming the technique and rules behind each
+  `NO_TELEMETRY`, for handoff to the sibling detection-decay repo.
+- `lab/targets.yml` + `internal/lab`, `plans/windows-discovery.yml`, `plans/cross-platform.yml`.
+- `make archives` / `scripts/enable-archives.sh`.
+- `sigma check` (pySigma) in CI, and a `gofmt` gate. CI now runs `./cmd/...` too — the
+  atomic-resolution, attribution, replay and diff guards live there and were being skipped.
+- Regression guards for both halves of the defect: no two techniques in a campaign may resolve
+  to the same command, and no two rules may share detection logic.
+
+### Added (2026-08, atomics)
+- `internal/atomic`: ART loader with input-argument interpolation, prerequisite parsing,
+  platform support checks and lab overrides.
+- `SKIPPED_PREREQ` verdict — an atomic whose own prerequisites are unmet never ran, and is no
+  longer reported as a detection miss.
+- `mappings/atomic-overrides.yml`: two override kinds — pinned inputs (keeps the upstream
+  command, used for lab containment) and replaced commands (only where no usable upstream test
+  exists). Every entry requires a `reason`, which the loader enforces and the report shows.
+- Proof chains carry atomic provenance (`name`, `guid`, `source`, `override_reason`) and a
+  `note` explaining any non-coverage verdict. Campaign results record the ART commit.
+- `make atomics` target and `scripts/fetch-atomics.sh`.
+- Regression guard: a test fails if any two techniques in the shipped campaign resolve to the
+  same command — the defect above, made unshippable.
+
 ### Fixed (2026-07 code review — trust contracts enforced in code, not just docs)
 - **Canary gating now runs in the pipeline.** Every `run` path executes the positive
   control against the same Linux/Docker executor+collector the campaign uses; if it does
