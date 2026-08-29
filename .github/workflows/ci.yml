@@ -11,22 +11,67 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+
+      # The engine resolves every technique's command from the pinned Atomic Red
+      # Team tree. Without it the atomic, replay and precision tests cannot run,
+      # so the fetch is part of the build, not an optional step.
+      - name: vendor atomic red team (pinned)
+        run: make atomics
+
       - name: build
         run: go build ./cmd/... ./internal/...
       - name: vet
         run: go vet ./cmd/... ./internal/...
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l cmd internal)
+          if [ -n "$unformatted" ]; then
+            echo "not gofmt-clean:"; echo "$unformatted"; exit 1
+          fi
+
+      # ./cmd/... is included deliberately: the atomic-resolution, attribution,
+      # replay and diff guards live there, and running only ./internal/... would
+      # skip every one of them.
       - name: test
-        run: go test ./internal/... -count=1
+        run: go test ./cmd/... ./internal/... -count=1
+
+      # Runs the real matcher over captured-format telemetry with no lab. This
+      # is the check that fixtures alone cannot provide.
+      - name: replay sample dataset
+        run: go run ./cmd/purpleloop replay testdata/sample-run > /dev/null
+
+      # Coverage without a false-positive rate is half a metric. Exits non-zero
+      # if any rule fires on the benign administrator workload.
+      - name: precision (false-positive gate)
+        run: go run ./cmd/purpleloop precision
+
   detections:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: sigma lint
+      - name: sigma lint (repo linter)
         run: |
           pip install pyyaml
           python3 scripts/lint-sigma.py
+
+      # pySigma enforces spec rules the hand-rolled Go parser tolerates. It
+      # caught a non-UUID rule identifier the Go parser accepted silently.
+      #
+      # The two excluded validators are SigmaHQ house conventions for their own
+      # repository, not parts of the Sigma specification, and both conflict with
+      # deliberate choices here: rules are named for the technique they detect
+      # (T1082.yml), and the pipeline canary is a positive control rather than an
+      # ATT&CK detection, so it carries a purpleloop.* tag.
+      - name: sigma check (pySigma spec validation)
+        run: |
+          pip install sigma-cli
+          sigma check --fail-on-issues \
+            -x filename_length -x namespace_tag \
+            detections/linux detections/windows detections/canary
+
       - name: fixture regression
         run: python3 scripts/regression-test.py
+
   secrets:
     runs-on: ubuntu-latest
     steps:
@@ -35,4 +80,3 @@ jobs:
           fetch-depth: 0
       - name: gitleaks
         uses: gitleaks/gitleaks-action@v2
-  # Phase 3 adds a `detections` job: sigma lint + regression vs fixtures.
