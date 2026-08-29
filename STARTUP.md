@@ -83,8 +83,17 @@ the Wazuh agent is connected (agent_control -l shows agent 002 Active).
 
 ### 3.1 Starting
 1. Power on the VM in VMware
-2. Confirm bridged IP: run `ipconfig` on the VM → should be `192.168.88.13`
-3. Test SSH: `ssh windows-vm@192.168.88.13 hostname`
+2. Find its address: run `ipconfig` on the VM. It depends on how the VM is
+   networked — bridged, NAT (`vmnet8`) and host-only (`vmnet1`) each give a
+   different subnet — so there is no address to expect here.
+3. Export it, and test SSH:
+   ```bash
+   export WINDOWS_SSH_HOST=<the address ipconfig showed>
+   export WINDOWS_SSH_USER=windows-vm
+   export WINDOWS_SSH_PASS=<password>
+   ssh "$WINDOWS_SSH_USER@$WINDOWS_SSH_HOST" hostname
+   ```
+   `lab/targets.yml` reads these; nothing in the repo hardcodes an address.
 4. Confirm services:
    ```powershell
    Get-Service WazuhSvc, Sysmon64 | Format-Table Name, Status
@@ -207,11 +216,12 @@ at boot. To prevent boot auto-start: `sudo systemctl disable docker`.
 
 | Symptom | Check |
 |---------|-------|
-| Canary fails | `ssh windows-vm@192.168.88.13 "sc query WazuhSvc Sysmon64"` |
+| Canary fails | `ssh "$WINDOWS_SSH_USER@$WINDOWS_SSH_HOST" "sc query WazuhSvc Sysmon64"` |
 | Agent not Active | `docker logs single-node-wazuh.manager-1 \| grep -i "auth\|enroll" \| tail -5` |
-| No Sysmon events | `ssh windows-vm@192.168.88.13 "wevtutil qe Microsoft-Windows-Sysmon/Operational /c:2"` |
+| No Sysmon events | `ssh "$WINDOWS_SSH_USER@$WINDOWS_SSH_HOST" "wevtutil qe Microsoft-Windows-Sysmon/Operational /c:2"` |
 | Dashboard 502 | `docker logs single-node-wazuh.indexer-1 \| tail -5` |
 | Build fails | `go mod tidy && make build` |
+| Canary: "no address for the windows victim" | `WINDOWS_SSH_HOST` is unset. There is no default — see 3.1. |
 | Port conflicts | `docker ps --format '{{.Names}} {{.Ports}}'` |
 | vm.max_map_count reset | `sysctl vm.max_map_count` (must be ≥262144) |
 

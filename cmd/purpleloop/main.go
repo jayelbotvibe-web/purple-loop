@@ -746,15 +746,30 @@ func detectLatency(start time.Time, evidence []model.Event) int64 {
 func runCanaryCmd() {
 	marker := canary.NewMarker()
 	ctx := context.Background()
-	sshHost := os.Getenv("WINDOWS_SSH_HOST")
-	sshUser := os.Getenv("WINDOWS_SSH_USER")
-	sshPass := os.Getenv("WINDOWS_SSH_PASS")
+
+	// The Windows host comes from the lab inventory, not from a literal here.
+	// It used to default to 192.168.88.13, an address that only existed on one
+	// machine's bridged network — on any other host the canary silently probed
+	// something that was not the victim, or nothing at all.
+	targets, err := lab.Load(defaultTargets)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+	t, ok := targets.ForPlatform("windows")
+	if !ok {
+		fmt.Fprintf(os.Stderr, "error: no windows target declared in %s\n", defaultTargets)
+		os.Exit(1)
+	}
+	sshHost, sshUser, sshPass := t.SSHConfig()
 	if sshHost == "" {
-		sshHost = "192.168.88.13"
+		fmt.Fprintf(os.Stderr,
+			"error: no address for the windows victim. Set %s to the IP the VM "+
+				"actually has (run `ipconfig` on it) — there is no default, because a\n"+
+				"wrong one probes a host that is not your victim.\n", t.SSHHostEnv)
+		os.Exit(1)
 	}
-	if sshUser == "" {
-		sshUser = "windows-vm"
-	}
+
 	exec := &executor.SSHExecutor{Host: sshHost, User: sshUser, Password: sshPass}
 	coll := &collector.WazuhCollector{ManagerContainer: "single-node-wazuh.manager-1"}
 	target := model.Target{Host: "windows-vm", Kind: "windows"}

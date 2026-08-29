@@ -12,7 +12,7 @@ import (
 // SSHExecutor runs atomics via SSH on remote targets (Windows VM, etc).
 // Uses sshpass for password auth in lab environments.
 type SSHExecutor struct {
-	Host     string // e.g. 192.168.88.13
+	Host     string // victim address; from WINDOWS_SSH_HOST via lab/targets.yml
 	User     string // e.g. windows-vm
 	Password string
 }

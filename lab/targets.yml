@@ -22,9 +22,13 @@ targets:
     rules_dir: detections/windows
     # Host and credentials come from the environment, never from source:
     #   WINDOWS_SSH_HOST, WINDOWS_SSH_USER, WINDOWS_SSH_PASS
-    # (The IP was previously hardcoded at cmd/purpleloop/main.go:314.)
+    #
+    # There is deliberately NO default host. The address depends on how your
+    # hypervisor is networked -- bridged, NAT (vmnet8) and host-only (vmnet1)
+    # all give different subnets -- so a committed default is right on exactly
+    # one machine and quietly wrong everywhere else. Find it with `ipconfig` on
+    # the VM and export WINDOWS_SSH_HOST.
     ssh_host_env: WINDOWS_SSH_HOST
     ssh_user_env: WINDOWS_SSH_USER
     ssh_pass_env: WINDOWS_SSH_PASS
-    default_host: 192.168.88.13
     default_user: windows-vm
