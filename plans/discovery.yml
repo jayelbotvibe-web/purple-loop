@@ -8,15 +8,15 @@ techniques:
   - technique_id: T1087.001
     atomic_ids: [T1087.001-1]
   - technique_id: T1082
-    atomic_ids: [T1082-1]
+    atomic_ids: [T1082-3]
   - technique_id: T1033
-    atomic_ids: [T1033-1]
+    atomic_ids: [T1033-2]
   - technique_id: T1007
-    atomic_ids: [T1007-1]
+    atomic_ids: [T1007-3]
   - technique_id: T1016
-    atomic_ids: [T1016-1]
+    atomic_ids: [T1016-3]
   - technique_id: T1049
-    atomic_ids: [T1049-1]
+    atomic_ids: [T1049-4]
   - technique_id: T1069
     atomic_ids: [T1069.001-1]
   - technique_id: T1135
