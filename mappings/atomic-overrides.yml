@@ -1,0 +1,59 @@
+# Lab overrides for Atomic Red Team tests.
+#
+# Resolution order is: override -> vendored ART -> error. An override is a
+# deliberate, visible substitution for an atomic that cannot run truthfully in
+# THIS lab (no Linux test exists, needs elevation the victim container lacks, or
+# installs packages on an offline victim). Every entry MUST carry a reason; the
+# loader rejects one that does not, and the reason is printed in the report so a
+# substituted command is never mistaken for the upstream atomic.
+#
+# An override is NOT a way to make a technique pass. If no honest command exists
+# for a technique on this platform, leave it out and let the run report the gap.
+
+overrides:
+  # CONTAINMENT. Upstream T1059.004-1 writes a script that pings #{host},
+  # whose default is 8.8.8.8 — traffic that leaves the isolated lab network and
+  # breaks the project's own containment rule ("never target anything outside
+  # purpleloop-lab"). Pinning the input keeps the upstream command and its
+  # detection surface intact while holding the traffic inside the lab.
+  T1059.004-1:
+    reason: >-
+      ART default pings 8.8.8.8, which leaves the purpleloop-lab network.
+      Pinned to loopback; the command and its telemetry are otherwise upstream.
+    input_arguments:
+      host: 127.0.0.1
+
+  # T1518 (Software Discovery) has SIX atomic tests upstream and not one of them
+  # supports Linux — they are Windows browser/dotnet checks plus one macOS
+  # Safari check. The campaign validates T1518 against a Linux victim, so there
+  # is nothing upstream to run. This is the equivalent enumeration a Linux
+  # adversary performs, and it is flagged as a substitution in every report.
+  T1518-1:
+    reason: >-
+      No Linux atomic exists upstream (all 6 tests are windows/macos). This is
+      the Linux-equivalent installed-software enumeration.
+    name: Software Discovery (Linux equivalent)
+    executor: sh
+    supported_platforms: [linux]
+    command: |
+      if [ -x "$(command -v dpkg)" ]; then dpkg -l | head -50; fi
+      if [ -x "$(command -v rpm)" ]; then rpm -qa | head -50; fi
+      if [ -x "$(command -v apk)" ]; then apk info | head -50; fi
+      ls -1 /usr/bin | head -50
+
+  # T1135-2 is the only Linux network-share atomic. It requires elevation and a
+  # samba package the offline victim container does not carry, so upstream it
+  # would always report SKIPPED_PREREQ and never exercise a detection. This
+  # enumerates shares with what the container actually has.
+  T1135-1:
+    reason: >-
+      Upstream T1135-2 needs samba + elevation; the victim container has
+      neither, so it can only ever skip. This uses the tools present.
+    name: Network Share Discovery (unprivileged Linux)
+    executor: sh
+    supported_platforms: [linux]
+    command: |
+      cat /proc/mounts | grep -Ei 'cifs|nfs|smb' || echo "no network mounts"
+      if [ -x "$(command -v showmount)" ]; then showmount -e localhost; fi
+      if [ -x "$(command -v smbclient)" ]; then smbclient -L localhost -N; fi
+      mount | head -30

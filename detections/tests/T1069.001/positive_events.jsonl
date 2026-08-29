@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/id","ParentImage":"/bin/sh","CommandLine":"id"}
+{"Image": "/usr/bin/groups", "ParentImage": "/bin/sh", "CommandLine": "groups", "User": "root"}
+{"Image": "/usr/bin/cat", "ParentImage": "/bin/sh", "CommandLine": "cat /etc/group", "User": "root"}

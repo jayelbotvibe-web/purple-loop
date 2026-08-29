@@ -19,13 +19,12 @@ cp lab/docker-compose.override.yml "$dest/single-node/docker-compose.override.ym
 cp lab/victim/entrypoint.sh lab/victim/entrypoint.sh 2>/dev/null || true
 echo "override installed into $dest/single-node/"
 
-# pin Atomic Red Team and record the commit for reproducibility
-art=lab/atomic-red-team
-if [ ! -d "$art" ]; then
-  git clone --depth 1 https://github.com/redcanaryco/atomic-red-team.git "$art"
-fi
-( cd "$art" && git rev-parse HEAD ) > mappings/atomic-red-team.commit
-echo "atomic-red-team pinned at $(cat mappings/atomic-red-team.commit)"
+# Vendor Atomic Red Team at the RECORDED commit. This used to clone HEAD and
+# then overwrite the pin file with whatever it got, so the "pin" tracked
+# upstream instead of holding it — every re-clone could silently change the
+# commands the engine executes. scripts/fetch-atomics.sh checks out the
+# recorded commit and verifies it.
+bash scripts/fetch-atomics.sh
 
 # generate certs (official helper) if not already present
 if [ ! -f "$dest/single-node/config/wazuh_indexer_ssl_certs/root-ca.pem" ]; then

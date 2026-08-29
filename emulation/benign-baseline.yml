@@ -1,0 +1,134 @@
+# Benign administrator workload — the precision baseline.
+#
+# CI's negative fixtures prove a rule rejects an event crafted to be rejected.
+# That is a weak claim: the fixture was written by the same person as the rule.
+# This is the stronger one — ordinary administration that a detection must stay
+# silent about. Any rule that fires here is a measured false positive, reported
+# with the command that triggered it.
+#
+# `image` and `command_line` are the process-creation event the command
+# produces, so precision can be measured offline in CI as well as live in the
+# lab. Commands are read-only and safe to run on the victim container.
+name: benign-admin-baseline
+description: Read-only administrator activity that no detection should fire on
+
+commands:
+  # --- package management ---
+  - category: package-management
+    command: apt-get --version
+    image: /usr/bin/apt-get
+    command_line: apt-get --version
+  - category: package-management
+    command: dpkg --configure -a --dry-run
+    image: /usr/bin/dpkg
+    command_line: dpkg --configure -a --dry-run
+  - category: package-management
+    command: apt-cache policy bash
+    image: /usr/bin/apt-cache
+    command_line: apt-cache policy bash
+
+  # --- routine file operations ---
+  - category: file-ops
+    command: ls -la /var/log
+    image: /usr/bin/ls
+    command_line: ls -la /var/log
+  - category: file-ops
+    command: du -sh /var/log
+    image: /usr/bin/du
+    command_line: du -sh /var/log
+  - category: file-ops
+    command: df -h
+    image: /usr/bin/df
+    command_line: df -h
+  - category: file-ops
+    command: cat /etc/hostname
+    image: /usr/bin/cat
+    command_line: cat /etc/hostname
+  - category: file-ops
+    command: tail -n 20 /var/log/dpkg.log
+    image: /usr/bin/tail
+    command_line: tail -n 20 /var/log/dpkg.log
+
+  # --- process and resource inspection ---
+  - category: process-inspection
+    command: ps aux
+    image: /usr/bin/ps
+    command_line: ps aux
+  - category: process-inspection
+    command: free -m
+    image: /usr/bin/free
+    command_line: free -m
+  - category: process-inspection
+    command: uptime
+    image: /usr/bin/uptime
+    command_line: uptime
+
+  # --- service operation (NOT enumeration) ---
+  - category: service-ops
+    command: systemctl is-active cron
+    image: /usr/bin/systemctl
+    command_line: systemctl is-active cron
+  - category: service-ops
+    command: systemctl status cron
+    image: /usr/bin/systemctl
+    command_line: systemctl status cron
+
+  # --- network operation (NOT reconnaissance) ---
+  - category: network-ops
+    command: ping -c 1 127.0.0.1
+    image: /usr/bin/ping
+    command_line: ping -c 1 127.0.0.1
+  - category: network-ops
+    command: ip --version
+    image: /usr/sbin/ip
+    command_line: ip --version
+  - category: network-ops
+    command: curl --version
+    image: /usr/bin/curl
+    command_line: curl --version
+
+  # --- ADJACENT cases: benign uses of the very binaries the detections watch.
+  # These are what make this test worth running. A rule keyed on a tool name
+  # rather than on what the tool is being asked to do will fire here.
+  - category: adjacent-benign
+    command: mount
+    image: /usr/bin/mount
+    command_line: mount
+  - category: adjacent-benign
+    command: getent hosts localhost
+    image: /usr/bin/getent
+    command_line: getent hosts localhost
+  - category: adjacent-benign
+    command: lsof /var/log/syslog
+    image: /usr/bin/lsof
+    command_line: lsof /var/log/syslog
+  - category: adjacent-benign
+    command: systemctl restart cron
+    image: /usr/bin/systemctl
+    command_line: systemctl restart cron
+  - category: adjacent-benign
+    command: cat /proc/cpuinfo
+    image: /usr/bin/cat
+    command_line: cat /proc/cpuinfo
+  - category: adjacent-benign
+    command: dpkg --configure -a
+    image: /usr/bin/dpkg
+    command_line: dpkg --configure -a
+
+  # --- shell and text utilities ---
+  - category: shell-utils
+    command: echo hello
+    image: /usr/bin/echo
+    command_line: echo hello
+  - category: shell-utils
+    command: date
+    image: /usr/bin/date
+    command_line: date
+  - category: shell-utils
+    command: env
+    image: /usr/bin/env
+    command_line: env
+  - category: shell-utils
+    command: grep --version
+    image: /usr/bin/grep
+    command_line: grep --version

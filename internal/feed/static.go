@@ -27,6 +27,7 @@ type PlanTechnique struct {
 
 // StaticFeed yields tasks from a YAML plan file.
 type StaticFeed struct {
+	Name  string
 	Tasks []model.TechniqueTask
 }
 
@@ -40,6 +41,7 @@ func (f *StaticFeed) Load(path string) error {
 	if err := yaml.Unmarshal(data, &plan); err != nil {
 		return fmt.Errorf("parse plan: %w", err)
 	}
+	f.Name = plan.Name
 	f.Tasks = make([]model.TechniqueTask, 0, len(plan.Techniques))
 	for i, t := range plan.Techniques {
 		f.Tasks = append(f.Tasks, model.TechniqueTask{

@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/apt","ParentImage":"/bin/bash","CommandLine":"apt update"}
+{"Image": "/usr/bin/lsof", "ParentImage": "/bin/bash", "CommandLine": "lsof /var/log/syslog", "User": "root"}
+{"Image": "/usr/sbin/ifconfig", "ParentImage": "/bin/sh", "CommandLine": "ifconfig", "User": "root"}

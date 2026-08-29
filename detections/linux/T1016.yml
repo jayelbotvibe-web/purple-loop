@@ -1,23 +1,37 @@
-title: Discovery - T1016
-id: 7d506977-0000-0000-0000-000000000000
+title: System Network Configuration Discovery (Linux)
+id: a1c0f2e4-0005-4b10-9c21-5f0a10160010
 status: experimental
-description: Detects T1016 discovery activity.
+description: Detects local network configuration enumeration, as emitted by atomic T1016-3 (arp -a; ifconfig; ip addr; netstat -ant; route).
 references:
   - https://attack.mitre.org/techniques/T1016/
 author: purple-loop
-date: 2026/07/04
+date: 2026/08/29
 logsource:
   product: linux
   category: process_creation
 detection:
-  selection:
+  legacy_tools:
     Image|endswith:
-      - '/id'
-      - '/whoami'
-  condition: selection
+      - '/ifconfig'
+      - '/arp'
+      - '/route'
+      - '/netstat'
+  iproute:
+    Image|endswith: '/ip'
+    CommandLine|contains:
+      - ' addr'
+      - ' route'
+      - ' link'
+      - ' neigh'
+  resolver:
+    CommandLine|contains:
+      - '/etc/resolv.conf'
+      - '/etc/hosts'
+  condition: legacy_tools or iproute or resolver
 falsepositives:
-  - Legitimate administrative scripts
+  - Network troubleshooting by administrators
+  - Container entrypoints inspecting their own interfaces
 level: low
 tags:
   - attack.discovery
-  - attack.T1016
+  - attack.t1016

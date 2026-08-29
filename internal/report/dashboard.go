@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 
 	"github.com/jayelbotvibe-web/purple-loop/internal/model"
 )
@@ -37,15 +38,30 @@ func (r DashboardReporter) Write(result model.CampaignResult) error {
 		return err
 	}
 
+	// Synthetic or inconclusive runs are NOT valid coverage: keep the per-run
+	// artifact above (marked, for the operator) but never append them to the
+	// history index or publish them to the public Pages snapshot.
+	if result.Synthetic || result.Inconclusive {
+		return nil
+	}
+
 	// History index
 	s := d["summary"].(map[string]any)
 	c := d["canary"].(map[string]any)
+	// Per-technique verdicts go into the index so a later run can be diffed
+	// against this one. A history of coverage percentages cannot answer the
+	// question that matters — WHICH technique regressed.
+	verdicts := map[string]string{}
+	for _, ch := range result.Chains {
+		verdicts[ch.TechniqueID] = string(ch.Verdict)
+	}
 	entry := map[string]any{
 		"id":             runID,
 		"campaign":       d["campaign"],
 		"generated_at":   d["generated_at"],
 		"coverage_pct":   s["coverage_pct"],
 		"canary_healthy": c["healthy"],
+		"techniques":     verdicts,
 	}
 	if err := appendHistory(dir, entry); err != nil {
 		return err
@@ -79,18 +95,28 @@ func appendHistory(dir string, entry map[string]any) error {
 }
 
 func buildCoverage(result model.CampaignResult) map[string]any {
+	campaign := result.Campaign
+	if campaign == "" {
+		campaign = "unnamed"
+	}
 	d := map[string]any{
-		"campaign":     "discovery",
-		"generated_at": result.StartedAt.UTC().Format("2006-01-02T15:04:05Z"),
-		"build":        "v1.3.0",
+		"campaign":       campaign,
+		"generated_at":   result.StartedAt.UTC().Format("2006-01-02T15:04:05Z"),
+		"build":          buildVersion(),
+		"atomics_commit": result.AtomicsCommit,
 	}
 
-	// Canary (per-platform from result if available, else default healthy)
+	// Canary — the REAL positive-control result for this run (never hardcoded).
+	// A synthetic or inconclusive run is not healthy: the dashboard keys its
+	// "inconclusive" banner off this flag.
+	canaryHealthy := result.CanaryHealthy && !result.Synthetic && !result.Inconclusive
 	d["canary"] = map[string]any{
-		"healthy": true,
+		"healthy":      canaryHealthy,
+		"synthetic":    result.Synthetic,
+		"inconclusive": result.Inconclusive,
+		"detail":       result.CanaryDetail,
 		"platforms": []map[string]any{
-			{"name": "linux", "healthy": true},
-			{"name": "windows", "healthy": true},
+			{"name": "linux", "healthy": canaryHealthy},
 		},
 	}
 
@@ -105,19 +131,28 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 	noTel := counts[model.NoTelemetry]
 	inconclusive := counts[model.Inconclusive]
 
-	denom := total - inconclusive - noTel
+	// Coverage is measured only over techniques that actually exercised a
+	// detection. Anything that never ran — INCONCLUSIVE, NO_TELEMETRY,
+	// SKIPPED_PREREQ, ERROR — is excluded from the denominator rather than
+	// silently counted as a gap.
+	skipped := counts[model.SkippedPrereq]
+	errored := counts[model.Errored]
+	denom := total - inconclusive - noTel - skipped - errored
 	pct := 0
 	if denom > 0 {
 		pct = int(math.Round(float64(detected) / float64(denom) * 100))
 	}
 
 	d["summary"] = map[string]any{
-		"total":        total,
-		"detected":     detected,
-		"missed":       missed,
-		"no_telemetry": noTel,
-		"inconclusive": inconclusive,
-		"coverage_pct": pct,
+		"total":          total,
+		"detected":       detected,
+		"missed":         missed,
+		"no_telemetry":   noTel,
+		"inconclusive":   inconclusive,
+		"skipped_prereq": skipped,
+		"errored":        errored,
+		"exercised":      denom,
+		"coverage_pct":   pct,
 	}
 
 	// Readiness (stub — arbiter campaign not wired here yet)
@@ -133,8 +168,31 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 		"Defense Evasion", "Credential Access", "Discovery", "Command & Control"}
 	d["tactics"] = tactics
 
-	// Untested (empty for now)
-	d["untested"] = map[string]int{}
+	// Collection gaps, for handoff to detection-decay. NO_TELEMETRY says a rule
+	// never saw the events it needs; it does not say why. detection-decay models
+	// the cause (source death, field drift), so name the technique and the rule
+	// whose fields went missing rather than leaving the operator to guess.
+	var gaps []map[string]any
+	for _, c := range result.Chains {
+		if c.Verdict != model.NoTelemetry {
+			continue
+		}
+		gaps = append(gaps, map[string]any{
+			"technique_id":   c.TechniqueID,
+			"rules_expected": c.RulesExpected,
+			"atomic":         c.Atomic.ID,
+			"window":         map[string]any{"start": c.Window.Start, "end": c.Window.End},
+			"note":           c.Note,
+		})
+	}
+	d["collection_gaps"] = gaps
+
+	// Untested rules, with the reason each was not exercised.
+	untested := result.UntestedRules
+	if untested == nil {
+		untested = map[string]string{}
+	}
+	d["untested"] = untested
 
 	// Techniques
 	var techs []map[string]any
@@ -167,9 +225,19 @@ func buildCoverage(result model.CampaignResult) map[string]any {
 		} else {
 			t["evidence"] = ""
 		}
-		// Gap for MISSED
-		if c.Verdict == model.Missed {
-			t["gap"] = map[string]string{"why": "", "next": ""}
+		// Provenance: which upstream atomic produced this command, and whether
+		// it was substituted for the lab.
+		t["attribution"] = string(c.Attribution)
+		t["detect_latency_ms"] = c.DetectLatencyMS
+		t["rules_expected"] = c.RulesExpected
+		t["rules_matched"] = c.RulesMatched
+		t["atomic_name"] = c.Atomic.Name
+		t["atomic_source"] = c.Atomic.Source
+		t["override_reason"] = c.Atomic.OverrideReason
+
+		// Gap: why this technique did not produce coverage.
+		if c.Verdict != model.Detected {
+			t["gap"] = map[string]string{"why": c.Note, "next": ""}
 		} else {
 			t["gap"] = nil
 		}
@@ -197,4 +265,11 @@ var techniqueMeta = map[string]struct{ name, tactic string }{
 // Ensure interface compliance at compile time.
 var _ model.Reporter = DashboardReporter{}
 
-func init() { _ = fmt.Sprintf("") } // suppress unused import
+// buildVersion reports the compiled version rather than a hardcoded string, so
+// a report always names the binary that produced it.
+func buildVersion() string {
+	if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
+		return bi.Main.Version
+	}
+	return "devel"
+}

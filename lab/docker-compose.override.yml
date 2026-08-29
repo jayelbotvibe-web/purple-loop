@@ -13,6 +13,12 @@ services:
     container_name: purpleloop-victim
     hostname: victim01
     restart: unless-stopped
+    # Deliberately unprivileged. Running Sysmon for Linux here was tried and
+    # measured (docs/PITFALLS.md): it needs privileged + systemd, and its eBPF
+    # then observes the whole host with no container identity in the event, so
+    # the telemetry cannot be attributed to this victim safely. A privileged
+    # container in a security lab is not worth paying for a source that would
+    # produce false attributions.
     cap_add:
       - AUDIT_CONTROL
       - AUDIT_READ

@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/apt","ParentImage":"/bin/bash","CommandLine":"apt update"}
+{"Image": "/usr/bin/systemctl", "ParentImage": "/bin/bash", "CommandLine": "systemctl restart nginx", "User": "root"}
+{"Image": "/usr/bin/who", "ParentImage": "/bin/sh", "CommandLine": "who", "User": "root"}

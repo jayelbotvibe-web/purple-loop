@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/id","ParentImage":"/bin/sh","CommandLine":"id"}
+{"Image": "/usr/bin/cat", "ParentImage": "/bin/sh", "CommandLine": "cat /proc/mounts", "User": "root"}
+{"Image": "/usr/bin/smbclient", "ParentImage": "/bin/sh", "CommandLine": "smbclient -L localhost -N", "User": "root"}

@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/apt","ParentImage":"/bin/bash","CommandLine":"apt update"}
+{"Image": "/usr/bin/dpkg", "ParentImage": "/bin/bash", "CommandLine": "dpkg --configure -a", "User": "root"}
+{"Image": "/usr/bin/uname", "ParentImage": "/bin/sh", "CommandLine": "uname -a", "User": "root"}

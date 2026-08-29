@@ -1,1 +1,3 @@
-{"Image":"/usr/bin/id","ParentImage":"/bin/sh","CommandLine":"id"}
+{"Image": "/usr/sbin/arp", "ParentImage": "/bin/sh", "CommandLine": "arp -a", "User": "root"}
+{"Image": "/usr/sbin/ifconfig", "ParentImage": "/bin/sh", "CommandLine": "ifconfig", "User": "root"}
+{"Image": "/usr/sbin/ip", "ParentImage": "/bin/sh", "CommandLine": "ip addr show", "User": "root"}

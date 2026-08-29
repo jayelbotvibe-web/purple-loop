@@ -18,17 +18,21 @@ MANAGER=$(docker compose -f lab/wazuh-docker/single-node/docker-compose.yml ps -
 
 echo "== verify-lab =="
 
+# Lab credentials come from the environment or the gitignored secrets file,
+# never hardcoded in this tracked script.
+if [ -f lab/secrets/wazuh-api.env ]; then
+  # shellcheck disable=SC1091
+  source lab/secrets/wazuh-api.env
+fi
+
 # 1) indexer cluster health green
+indexer_auth="${WAZUH_INDEXER_USER:-admin}:${WAZUH_INDEXER_PASSWORD:?WAZUH_INDEXER_PASSWORD not set}"
 health=$(docker exec "$INDEXER" \
-  curl -s -k -u admin:SecretPassword https://localhost:9200/_cluster/health 2>/dev/null || true)
+  curl -s -k -u "$indexer_auth" https://localhost:9200/_cluster/health 2>/dev/null || true)
 echo "$health" | grep -q '"status":"green"' && ok "indexer cluster health green" \
   || no "indexer cluster health not green (got: ${health:-none})"
 
-# 2) manager API authenticates
-WAZUH_PASS="${WAZUH_API_PASSWORD:-}"
-if [ -z "$WAZUH_PASS" ] && [ -f lab/secrets/wazuh-api.env ]; then
-  source lab/secrets/wazuh-api.env
-fi
+# 2) manager API authenticates (credentials sourced above)
 tok=$(docker exec "$MANAGER" \
   curl -s -k -u "${WAZUH_API_USER:-wazuh-wui}:${WAZUH_API_PASSWORD:?WAZUH_API_PASSWORD not set}" -X POST \
   "https://localhost:55000/security/user/authenticate?raw=true" 2>/dev/null || true)

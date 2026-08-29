@@ -38,11 +38,10 @@ func parseTimestamp(s string) (time.Time, error) {
 	return time.Time{}, fmt.Errorf("cannot parse timestamp %q", s)
 }
 
-// WazuhCollector reads agent alerts from the manager's alerts.json log.
+// WazuhCollector reads agent alerts from the manager's archives.json via
+// `docker exec`. With no ManagerContainer (and no test alertsPath) it runs in
+// dry mode and returns a single synthetic event.
 type WazuhCollector struct {
-	BaseURL          string // e.g. https://localhost:55000 — empty => dry mode
-	User             string
-	Pass             string
 	ManagerContainer string // docker container name, e.g. single-node-wazuh.manager-1
 
 	// alertsPath overrides the source for testing; empty uses docker exec.
@@ -156,9 +155,13 @@ func dateAlternation(w model.TimeWindow) string {
 	if w.Start.IsZero() || w.End.IsZero() || w.End.Before(w.Start) {
 		return ""
 	}
-	const maxDays = 31
-	start := w.Start.UTC().Truncate(24 * time.Hour)
-	end := w.End.UTC().Truncate(24 * time.Hour)
+	const maxDays = 34
+	// Widen by a day on each side: Wazuh may stamp events with a non-UTC offset,
+	// so a line's literal YYYY-MM-DD can be the local date while the window is
+	// computed in UTC. Including the adjacent days keeps a day-boundary event in
+	// the coarse pre-filter; the precise instant comparison below still bounds it.
+	start := w.Start.UTC().Truncate(24 * time.Hour).Add(-24 * time.Hour)
+	end := w.End.UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)
 	var stamps []string
 	for d := start; !d.After(end); d = d.Add(24 * time.Hour) {
 		stamps = append(stamps, d.Format("2006-01-02"))

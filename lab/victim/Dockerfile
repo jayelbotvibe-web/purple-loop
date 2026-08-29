@@ -1,5 +1,16 @@
-# Ubuntu victim: runs the Wazuh agent + auditd so attacks generate telemetry
-# that ships to the manager. Kept intentionally small.
+# Ubuntu victim: the Wazuh agent plus whatever process-creation telemetry this
+# host can actually provide.
+#
+# NOT privileged, and NOT running Sysmon for Linux. That was tried and measured
+# — see docs/PITFALLS.md, "Why the Linux victim is not a container with Sysmon".
+# Sysmon works, but its eBPF is kernel-global: inside a container it observes
+# every process on the host, and the event carries no container identity. Scoping
+# it after the fact by resolving host PIDs is defeated by PID reuse, which let
+# host binaries through; verifying process identity closes that leak but then
+# drops the short-lived processes the atomics actually spawn. Either way the
+# telemetry is wrong in a direction this project refuses to ship.
+#
+# The Linux equivalent of the Windows victim is a VM, not a container.
 FROM ubuntu:22.04
 
 ARG WAZUH_VERSION=4.9.2

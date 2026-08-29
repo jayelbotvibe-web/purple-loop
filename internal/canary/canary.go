@@ -115,7 +115,7 @@ func (ck Checker) Run(ctx context.Context, marker string, exec model.Executor,
 // Check executes the canary on one platform and verifies the marker was
 // detected, using production defaults.
 func Check(ctx context.Context, marker string, exec model.Executor,
-	coll model.Collector, platform string, target model.Target, dryRun bool) Result {
+	coll model.Collector, platform string, target model.Target) Result {
 	return Checker{}.Run(ctx, marker, exec, coll, platform, target)
 }
 

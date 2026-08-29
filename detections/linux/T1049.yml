@@ -1,23 +1,33 @@
-title: Discovery - T1049
-id: e3b2e995-0000-0000-0000-000000000000
+title: System Network Connections Discovery (Linux)
+id: a1c0f2e4-0006-4b10-9c21-5f0a10490010
 status: experimental
-description: Detects T1049 discovery activity.
+description: Detects enumeration of active network connections, as emitted by atomic T1049-4 (ss -antp / lsof -i) and T1049-6 (sockstat).
 references:
   - https://attack.mitre.org/techniques/T1049/
 author: purple-loop
-date: 2026/07/04
+date: 2026/08/29
 logsource:
   product: linux
   category: process_creation
 detection:
-  selection:
+  socket_stats:
     Image|endswith:
-      - '/id'
-      - '/whoami'
-  condition: selection
+      - '/ss'
+      - '/sockstat'
+  lsof_network:
+    Image|endswith: '/lsof'
+    CommandLine|contains: '-i'
+  netstat_conns:
+    Image|endswith: '/netstat'
+    CommandLine|contains:
+      - '-a'
+      - '-t'
+      - '-n'
+  condition: socket_stats or lsof_network or netstat_conns
 falsepositives:
-  - Legitimate administrative scripts
+  - Administrators diagnosing connectivity
+  - Health checks probing listening ports
 level: low
 tags:
   - attack.discovery
-  - attack.T1049
+  - attack.t1049

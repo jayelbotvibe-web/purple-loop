@@ -52,6 +52,13 @@ func evalIdent(name string, detections map[string]FieldMap, event map[string]str
 	// All field entries in the identifier must match (AND)
 	for field, entry := range fm {
 		val, exists := event[field]
+		if entry.MatchNull {
+			// Sigma `Field: null` matches when the field is absent or empty.
+			if exists && val != "" {
+				return false
+			}
+			continue
+		}
 		if !exists {
 			return false
 		}
@@ -127,23 +134,22 @@ func matchField(eventValue string, entry FieldEntry) bool {
 			return matchNumeric(eventValue, candidate, numOp)
 		}
 
-		v := strings.ToLower(eventValue)
-		c := strings.ToLower(candidate)
-
-		// If candidate contains * wildcards, use glob-like matching
-		if strings.Contains(c, "*") {
-			return matchWildcard(v, c)
-		}
-
+		// Express the modifier (or an explicit-wildcard value) as a Sigma glob,
+		// then match as an anchored, case-insensitive regexp. Anchoring pins the
+		// literal segments to the ends of the value (so `*\svchost.exe` does not
+		// match `…svchost.exe.malware`), `?` matches one character, and regex
+		// metacharacters in the value can't leak.
 		switch {
-		case hasEndsWith:
-			return strings.HasSuffix(v, c)
-		case hasStartsWith:
-			return strings.HasPrefix(v, c)
 		case hasContains:
-			return strings.Contains(v, c)
+			return globMatch("*"+candidate+"*", eventValue)
+		case hasStartsWith:
+			return globMatch(candidate+"*", eventValue)
+		case hasEndsWith:
+			return globMatch("*"+candidate, eventValue)
+		case strings.ContainsAny(candidate, "*?"):
+			return globMatch(candidate, eventValue)
 		default:
-			return v == c
+			return strings.EqualFold(eventValue, candidate)
 		}
 	}
 
@@ -185,38 +191,40 @@ func matchNumeric(eventValue, candidate, op string) bool {
 	return false
 }
 
-// matchWildcard performs case-insensitive glob matching where * matches any
-// sequence of characters.  It splits the pattern on * and matches each literal
-// segment in order within the value string.
-func matchWildcard(value, pattern string) bool {
-	// A single "*" matches everything
-	if pattern == "*" {
-		return true
-	}
+// globMatch reports whether value matches a Sigma glob pattern, case-insensitively
+// and anchored to the whole value.
+func globMatch(pattern, value string) bool {
+	re := globToRegexp(pattern)
+	return re != nil && re.MatchString(value)
+}
 
-	segments := strings.Split(pattern, "*")
-	pos := 0
-	for _, seg := range segments {
-		if seg == "" {
-			continue // leading *, trailing *, or consecutive **
+// globToRegexp compiles a Sigma wildcard pattern into an anchored,
+// case-insensitive regexp: `*` → any run, `?` → one character; every other
+// character (including `\`, a literal path separator in this dialect) is
+// escaped. Returns nil if compilation fails (treated as no match by globMatch).
+func globToRegexp(glob string) *regexp.Regexp {
+	var b strings.Builder
+	b.WriteString("(?is)^")
+	for i := 0; i < len(glob); i++ {
+		switch glob[i] {
+		case '*':
+			b.WriteString(".*")
+		case '?':
+			b.WriteString(".")
+		default:
+			b.WriteString(regexp.QuoteMeta(string(glob[i])))
 		}
-		idx := strings.Index(value[pos:], seg)
-		if idx < 0 {
-			return false
-		}
-		pos += idx + len(seg)
 	}
-	return true
+	b.WriteString("$")
+	re, err := regexp.Compile(b.String())
+	if err != nil {
+		return nil
+	}
+	return re
 }
 
 func evalOneOf(e OneOfExpr, detections map[string]FieldMap, event map[string]string) bool {
-	names := e.Names
-	if len(names) == 0 {
-		// "1 of them" — expand to all search-identifiers
-		for k := range detections {
-			names = append(names, k)
-		}
-	}
+	names := expandIdentNames(e.Names, detections)
 	matched := 0
 	for _, name := range names {
 		if evalIdent(name, detections, event) {
@@ -227,17 +235,45 @@ func evalOneOf(e OneOfExpr, detections map[string]FieldMap, event map[string]str
 }
 
 func evalAllOf(e AllOfExpr, detections map[string]FieldMap, event map[string]string) bool {
-	names := e.Names
-	if len(names) == 0 {
-		// "all of them" — expand to all search-identifiers
-		for k := range detections {
-			names = append(names, k)
-		}
-	}
+	names := expandIdentNames(e.Names, detections)
 	for _, name := range names {
 		if !evalIdent(name, detections, event) {
 			return false
 		}
 	}
 	return len(names) > 0 // vacuous truth over empty set → false
+}
+
+// expandIdentNames resolves aggregate operands to concrete identifier names.
+// Empty input means "of them" → every identifier EXCEPT filter/falsepositive
+// selections (which are meant to be referenced explicitly, not folded into an
+// OR/AND). A name containing */? is a glob expanded against the identifier keys.
+func expandIdentNames(names []string, detections map[string]FieldMap) []string {
+	if len(names) == 0 {
+		var out []string
+		for k := range detections {
+			if strings.HasPrefix(k, "filter") || strings.HasPrefix(k, "falsepositive") {
+				continue
+			}
+			out = append(out, k)
+		}
+		return out
+	}
+	var out []string
+	for _, n := range names {
+		if strings.ContainsAny(n, "*?") {
+			re := globToRegexp(n)
+			if re == nil {
+				continue
+			}
+			for k := range detections {
+				if re.MatchString(k) {
+					out = append(out, k)
+				}
+			}
+			continue
+		}
+		out = append(out, n)
+	}
+	return out
 }

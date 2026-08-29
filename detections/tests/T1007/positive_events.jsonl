@@ -1,1 +1,2 @@
-{"Image":"/usr/bin/id","ParentImage":"/bin/sh","CommandLine":"id"}
+{"Image": "/usr/bin/systemctl", "ParentImage": "/bin/bash", "CommandLine": "systemctl --type=service", "User": "root"}
+{"Image": "/usr/sbin/service", "ParentImage": "/bin/bash", "CommandLine": "service --status-all", "User": "root"}

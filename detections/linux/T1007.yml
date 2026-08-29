@@ -1,23 +1,32 @@
-title: Discovery - T1007
-id: 792aae53-0000-0000-0000-000000000000
+title: System Service Discovery (Linux)
+id: a1c0f2e4-0004-4b10-9c21-5f0a10070010
 status: experimental
-description: Detects T1007 discovery activity.
+description: Detects service enumeration, as emitted by atomic T1007-3 (systemctl --type=service / service -e) and T1007-8 (init script listing).
 references:
   - https://attack.mitre.org/techniques/T1007/
 author: purple-loop
-date: 2026/07/04
+date: 2026/08/29
 logsource:
   product: linux
   category: process_creation
 detection:
-  selection:
+  systemctl_list:
+    Image|endswith: '/systemctl'
+    CommandLine|contains:
+      - '--type=service'
+      - 'list-units'
+      - 'list-unit-files'
+  service_enum:
     Image|endswith:
-      - '/id'
-      - '/whoami'
-  condition: selection
+      - '/service'
+      - '/chkconfig'
+  initscripts:
+    CommandLine|contains: '/etc/init.d'
+  condition: systemctl_list or service_enum or initscripts
 falsepositives:
-  - Legitimate administrative scripts
+  - Administrators and provisioning tools inventorying services
+  - Monitoring agents polling unit state
 level: low
 tags:
   - attack.discovery
-  - attack.T1007
+  - attack.t1007
