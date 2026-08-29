@@ -2,6 +2,24 @@
 All notable changes to this project follow Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
+
+## [2.0.0] — 2026-08-29
+
+### Breaking
+- **Coverage is measured only over techniques that actually exercised a detection.**
+  `INCONCLUSIVE`, `NO_TELEMETRY`, `SKIPPED_PREREQ` and `ERROR` are reported separately instead
+  of counting as gaps, so published percentages will move — a harness failure is not a
+  detection gap.
+- **New verdict `SKIPPED_PREREQ`.** Anything parsing verdicts must handle it.
+- **`mappings/attack_rule_map.seed.json` is removed**, replaced by
+  `mappings/attack_rule_map.json` with a different schema (`techniques` / `untested_rules`, and
+  `expected_rules[]` per technique).
+- **`lab/targets.yml` is required** for `run` and `canary`, and declares no default Windows
+  address. With `WINDOWS_SSH_HOST` unset, `canary` now errors instead of probing 192.168.88.13.
+- **`make atomics` is required before any run.** The engine resolves every command from the
+  pinned Atomic Red Team tree and has no fallback.
+- Plan and emulation files name different atomic IDs (the Linux tests, not ART's first test).
+
 ### Fixed (2026-08 review — the engine now executes the atomics it claims to)
 - **Every technique ran the same hardcoded `id; whoami`.** `atomic_ids` was parsed from plan
   YAML, carried through emulation stages and the arbiter feed and written into the proof
